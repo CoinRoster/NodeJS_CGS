@@ -1,0 +1,72 @@
+//Required modules:
+const BigNumber = require('bignumber.js');
+
+// *** Cryptocurrency Gateway Services Server Configuration ***
+
+exports.balanceCheckInterval = 20; //the number of seconds required to elapse between successive external balance update API calls
+
+//accounts used when withdrawals that exceed original deposit amounts
+exports.withdrawalAccounts = [
+	{
+		"type":"btc",
+		"account":"1HjSwXFqL4B2GWB6Umt34PX9R69xvPRzUz", 
+		"private":"c3b2f4aabb1c9e7a2174f45466ca55dbf58885eec6b88f0a4cb68d7c18fe0bc9",
+		"public":"0272f3649c2c94d565e649a5245d07b9196d01c6ce82bcf0e56b774464a061cac9",
+		"wif":"L3n8AF1T3efSHM7eP3E3P5QZbhkhir39bDsJzUn2neBCSk1YoSUC"
+	},
+	{	
+		"type":"tbtc",
+		"account":"mqyyssSuQ4tV2mfYuXtcZJ6tXhtKqdr6sX", 
+		"private":"8cb2b97c38e7162c7b9b4d17bdb34850330c7247a02fe6d7e0a8b3fe55ece11a",
+		"public":"03d92345040e56fa8399d299501824e2c4677e2e031f2988fc0174cb288248a4ae",
+		"wif":"cSJCaYkib6zseyntVzeXHau1j8hNgG2epLYDCAEWi2oH58bkEEqX"
+	}
+]; 
+
+
+//returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
+exports.getNextWithdrawalAccount = (accountType) => {
+	for (var count=0; count < exports.withdrawalAccounts.length; count++) {
+		var currentAccount = exports.withdrawalAccounts[count]
+		if (currentAccount.type == accountType) {
+			return (currentAccount);
+		}
+	}
+}
+
+//external API access information such as tokens
+exports.APIInfo={
+	"blockcypher":
+		{"token":"fb7cf8296b9143a889913b1ce43688aa",
+		//or "btc/main", "btc/test3"
+		"network":"btc/test3",
+		//default miner fee in Satoshis (must be a BigNumber!)
+		"minerFee": new BigNumber("55000")}
+}; 
+
+
+//JSON-RPC server options:
+exports.rpc_options = {
+  // Port that RPC server will listen on
+  port: 8090,
+  //Maximum number of batch JSON-RPC requests (more than this results in a JSONRPC_INTERNAL_ERROR error.
+  max_batch_requests: 10,
+  //Default response headers:
+  headers: [
+	{"Access-Control-Allow-Origin" : "*"},
+	{"Content-Type" : "application/json"}
+  ]
+}
+
+//Standards JSON-RPC error return code definitions:
+exports.JSONRPC_PARSE_ERROR = -32700; // Parse error. Invalid JSON was received by the server. An error occurred on the server while parsing the JSON text.
+exports.JSONRPC_REQUEST_ERROR = -32600; // Invalid Request. The JSON sent is not a valid Request object.
+exports.JSONRPC_METHOD_NOT_FOUND_ERROR = -32601; // Method not found. The method does not exist / is not available.
+exports.JSONRPC_INVALID_PARAMS_ERROR = -32602; // Invalid params. Invalid method parameter(s).
+exports.JSONRPC_INTERNAL_ERROR = -32603; // Internal error. Internal JSON-RPC error.
+
+//Custom JSON-RPC error return code definitions (-32000 to -32099):
+exports.JSONRPC_SQL_ERROR = -32001; // Database error. The database responded with an error.
+exports.JSONRPC_SQL_NO_RESULTS = -32002; // Database error. The query returned no results.
+exports.JSONRPC_EXTERNAL_API_ERROR = -32003; // An external API generated an error instead of an expected response.
+exports.JSONRPC_NSF_ERROR = -32004; // Insufficient funds error. The account or address doesn't have sufficient funds to make this transaction.
