@@ -7,7 +7,7 @@ var connection = mysql.createPool({
   user     : 'root',
   password : 'CRDroplet2017!'
 });
-
+ 
 
 /**
 * Attempts to create a new pooled connection to the database using default settings.
