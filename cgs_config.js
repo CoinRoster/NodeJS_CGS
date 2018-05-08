@@ -41,7 +41,7 @@ exports.APIInfo={
 		//or "btc/main", "btc/test3"
 		"network":"btc/test3",
 		//default miner fee in Satoshis (must be a BigNumber!)
-		"minerFee": new BigNumber("55000")}
+		"minerFee": new BigNumber("65000")}
 }; 
 
 
