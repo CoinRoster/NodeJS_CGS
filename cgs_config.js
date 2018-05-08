@@ -16,10 +16,10 @@ exports.withdrawalAccounts = [
 	},
 	{	
 		"type":"tbtc",
-		"account":"mqyyssSuQ4tV2mfYuXtcZJ6tXhtKqdr6sX", 
-		"private":"8cb2b97c38e7162c7b9b4d17bdb34850330c7247a02fe6d7e0a8b3fe55ece11a",
-		"public":"03d92345040e56fa8399d299501824e2c4677e2e031f2988fc0174cb288248a4ae",
-		"wif":"cSJCaYkib6zseyntVzeXHau1j8hNgG2epLYDCAEWi2oH58bkEEqX"
+		"account":"mjMSwGSkRa7qCRhXqS59wH1VmdByxjzNqx", 
+		"private":"aa2e978974e794e76cc7c7b512821ac805a498e7bc1187c5097020096b89649d",
+		"public":"039280efa28f56373e0919868d83577696ad2e4ffff48842ba02a62abf8f214b3f",
+		"wif":"cTHWigzvW2F2aDVtTGMVb1WU3UvsF9g6QkbkFGhDYqj8tAx5bLJf"
 	}
 ]; 
 
