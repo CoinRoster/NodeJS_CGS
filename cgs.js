@@ -383,10 +383,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	} else {
 		cashRegister = serverConfig.getNextWithdrawalAccount("btc");
 	}	
-	console.log('\n');
-	console.log(cashRegister);
 	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister.account);
-	console.log(cashRegisterInfo);
 	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
 	
 	if (withdrawalSatoshisReq.greaterThan(cashRegisterInfo.final_balance)) {
@@ -465,9 +462,6 @@ function checkAccountBalance(generator, account) {
 		method: "GET",
 		json: true		
 	}, function (err, response, body){ 
-		if(err) {
-			console.log(err);
-		}  		
 		generator.next(body);				
 	});
 }
