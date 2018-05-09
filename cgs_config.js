@@ -23,6 +23,8 @@ exports.withdrawalAccounts = [
 	}
 ]; 
 
+exports.coldStorageAddress = 'morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf';
+
 
 //returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
 exports.getNextWithdrawalAccount = (accountType) => {
@@ -70,3 +72,4 @@ exports.JSONRPC_SQL_ERROR = -32001; // Database error. The database responded wi
 exports.JSONRPC_SQL_NO_RESULTS = -32002; // Database error. The query returned no results.
 exports.JSONRPC_EXTERNAL_API_ERROR = -32003; // An external API generated an error instead of an expected response.
 exports.JSONRPC_NSF_ERROR = -32004; // Insufficient funds error. The account or address doesn't have sufficient funds to make this transaction.
+exports.JSONRPC_CRF_ERROR = -32005; // Cash register funds error. The Cash Register has insufficient funds to make the transaction.
