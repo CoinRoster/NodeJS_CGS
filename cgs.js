@@ -385,7 +385,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	}	
 	console.log('\n');
 	console.log(cashRegister);
-	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister);
+	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister.account);
 	console.log(cashRegisterInfo);
 	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
 	
@@ -464,7 +464,10 @@ function checkAccountBalance(generator, account) {
 		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs/"+account+"/full",
 		method: "GET",
 		json: true		
-	}, function (error, response, body){   		
+	}, function (err, response, body){ 
+		if(err) {
+			console.log(err);
+		}  		
 		generator.next(body);				
 	});
 }
