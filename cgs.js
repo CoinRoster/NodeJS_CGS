@@ -1,5 +1,5 @@
 /**
-* A JSON-RPC 2.0 compliant Cryptocurrency Services Gateway API
+* A JSON-RPC 2.0 compliant Cryptocurrency Gateway Services  API
 */
 //Required modules:
 var db = require("./db.js"); //MySQL database
@@ -375,22 +375,42 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
 	}
 	trace ("withdrawalSatoshisReq="+withdrawalSatoshisReq.toString());
-	if (withdrawalSatoshisReq.greaterThan(satoshiBalanceConf)) {
-		//withdraw from bankroll account
-		trace ("      Making withdrawal from joint account.");
-		if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
-			var withdrawalAccount = serverConfig.getNextWithdrawalAccount("tbtc");
-		} else {
-			withdrawalAccount = serverConfig.getNextWithdrawalAccount("btc");
-		}		
-		var wif = withdrawalAccount.wif;
-		var txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
+
+	// cash register payment ---------------------------------------------------------------
+
+	if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
+		var cashRegister = serverConfig.getNextWithdrawalAccount("tbtc");
 	} else {
-		//withdraw from deposit account
-		trace ("      Making withdrawal from deposit account.");
-		wif = keyData.wif;
-		txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
+		cashRegister = serverConfig.getNextWithdrawalAccount("btc");
+	}	
+	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister);
+	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
+	if (withdrawalSatoshisReq.greaterThan(cashRegisterInfo.final_balance)) {
+		// cash register does not have enough to cover withdrawal request
+		trace("Cash register does not have enough balance");
+		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_CRF_ERROR, "We are not able to process this request automatically; an admin has been notified and will process the transaction manually.");
+		return;
+	} else {
+		trace("Processing withdrawal from cash register");
+		var wif = cashRegister.wif;
+		var txSkeleton = yield getTxSkeleton (generator, cashRegister.account, requestData.params.toAddress, withdrawalSatoshisReq);
 	}
+	// if (withdrawalSatoshisReq.greaterThan(satoshiBalanceConf)) {
+	// 	//withdraw from bankroll account
+	// 	trace ("      Making withdrawal from joint account.");
+	// 	if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
+	// 		var withdrawalAccount = serverConfig.getNextWithdrawalAccount("tbtc");
+	// 	} else {
+	// 		withdrawalAccount = serverConfig.getNextWithdrawalAccount("btc");
+	// 	}		
+	// 	var wif = withdrawalAccount.wif;
+	// 	var txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
+	// } else {
+	// 	//withdraw from deposit account
+	// 	trace ("      Making withdrawal from deposit account.");
+	// 	wif = keyData.wif;
+	// 	txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
+	// }
 	if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 		trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
