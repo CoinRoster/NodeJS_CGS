@@ -385,6 +385,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	}	
 	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister);
 	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
+	trace("balance info: "+ cashRegisterInfo);
 	if (withdrawalSatoshisReq.greaterThan(cashRegisterInfo.final_balance)) {
 		// cash register does not have enough to cover withdrawal request
 		trace("Cash register does not have enough balance");
