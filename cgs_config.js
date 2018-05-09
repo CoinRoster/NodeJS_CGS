@@ -39,7 +39,7 @@ exports.getNextWithdrawalAccount = (accountType) => {
 //external API access information such as tokens
 exports.APIInfo={
 	"blockcypher":
-		{"token":"fb7cf8296b9143a889913b1ce43688aa",
+		{"token":"dea4a0d80c0a4567a758e2f6daa49050",
 		//or "btc/main", "btc/test3"
 		"network":"btc/test3",
 		//default miner fee in Satoshis (must be a BigNumber!)
