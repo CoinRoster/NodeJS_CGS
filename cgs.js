@@ -383,9 +383,12 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	} else {
 		cashRegister = serverConfig.getNextWithdrawalAccount("btc");
 	}	
+	console.log('\n');
+	console.log(cashRegister);
 	var cashRegisterInfo = yield checkAccountBalance(generator, cashRegister);
-	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
 	console.log(cashRegisterInfo);
+	cashRegisterInfo = checkBalanceObj(cashRegisterInfo); //check for duplicate transactions
+	
 	if (withdrawalSatoshisReq.greaterThan(cashRegisterInfo.final_balance)) {
 		// cash register does not have enough to cover withdrawal request
 		trace("Cash register does not have enough balance");
