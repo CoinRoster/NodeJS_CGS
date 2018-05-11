@@ -469,7 +469,7 @@ function pushToColdStorage(generator, bcBalanceObj, keyData) {
 	var depositAddress = bcBalanceObj.address;
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
-		var txSkeleton = yield getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		var txSkeleton = getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
 		if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 			trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
@@ -484,7 +484,7 @@ function pushToColdStorage(generator, bcBalanceObj, keyData) {
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
 			return;
 		}
-		var sentTx = yield sendTransaction(generator, signedTx);
+		var sentTx = sendTransaction(generator, signedTx);
 		trace ("      Posted transaction: "+JSON.stringify(sentTx));
 		returnData = sentTx.tx;
 		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
