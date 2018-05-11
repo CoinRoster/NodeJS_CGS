@@ -186,6 +186,10 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
+	// payment forwarding ---------------------------------------------------------
+	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
+	pushToColdStorage(accountInfo, keyData);
+	// ----------------------------------------------------------------------------
 	try {
 		trace (JSON.stringify(accountInfo));
 		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
@@ -214,7 +218,11 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.balance.satoshi_unc = String(accountInfo.unconfirmed_balance);
 		responseData.balance.bitcoin = String(0.00000001 * Math.floor(accountInfo.final_balance));
 		*/
-		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); //accountInfo.balance is in Satoshis, as returned by external API
+		var bitcoin_cnf_db = new BigNumber(String(queryResult.rows[0].btc_c_balance)); // get existing confirmed balance from db
+		bitcoin_cnf_db = bitcoin_cnf_db.times(new BigNumber(100000000)); // convert from BTC to sat
+		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); // accountInfo.balance is in Satoshis, as returned by external API
+		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.plus(bitcoin_cnf_db); // add with existing value for accurate book-keeping
+		
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_unc = new BigNumber(String(accountInfo.unconfirmed_balance));
 		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.times(new BigNumber(0.00000001));
@@ -389,7 +397,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	if (withdrawalSatoshisReq.greaterThan(cashRegisterInfo.final_balance)) {
 		// cash register does not have enough to cover withdrawal request
 		trace("Cash register does not have enough balance");
-		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_CRF_ERROR, "We are not able to process this request automatically; an admin has been notified and will process the transaction manually.");
+		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_CRF_ERROR, "Insufficient Cash Register Funds");
 		return;
 	} else {
 		trace("Processing withdrawal from cash register");
@@ -449,6 +457,47 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 }
 
 //*************************** UTILITY FUNCTIONS *************************************
+
+/**
+ * Pushes any balance in an address to the cold storage address
+ * 
+ * @param generator The generator function to return the API result to.
+ * @param bcBalanceObj A native object containing the account balance response from BlockCypher's API.
+ * @param keyData JSON object containing keys associated with address 
+ */
+function pushToColdStorage(generator, bcBalanceObj, keyData) {
+	var depositAddress = bcBalanceObj.address;
+	if(bcBalanceObj.balance > 0) {
+		trace("positive balance in deposit account, pushing to cold storage")
+		var txSkeleton = yield getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
+			trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+			return;
+		}
+		try {
+			var wif = keyData.wif;
+			var signedTx = signTxSkeleton (txSkeleton, wif);
+		} catch (err) {
+			trace ("      Error signing transaction skeleton: \n"+err+"\n");
+			trace (JSON.stringify(txSkeleton));
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
+			return;
+		}
+		var sentTx = yield sendTransaction(generator, signedTx);
+		trace ("      Posted transaction: "+JSON.stringify(sentTx));
+		returnData = sentTx.tx;
+		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
+			if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
+				trace("  successfully forwarded to cold storage pending confirmation");
+			}
+		} else {
+			trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem sending the transaction.", sentTx);
+			return;
+		}
+	}
+}
 
 /**
 * Checks a Bitcoin account balance via an external API request.
@@ -841,7 +890,7 @@ function invokeRPCFunction(postData, requestObj, responseObj, batchResponses) {
 *
 * @param postData The POST data included with the request.
 * @param requestObj The request object (https://nodejs.org/api/http.html#http_class_http_incomingmessage).
-* @param requestObj The response object (https://nodejs.org/api/http.html#http_class_http_serverresponse).
+* @param responseObj The response object (https://nodejs.org/api/http.html#http_class_http_serverresponse).
 * @param batchResponses An object containing expected responses for a batch. If null, this function is not being called as part of a batch. Usually the contents of this
 * 			object are handled by the HTTP request processor and responder and so should not be updated.
 * @param code A Number that indicates the error type that occurred. This MUST be an integer.
