@@ -188,7 +188,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
 	// payment forwarding ---------------------------------------------------------
 	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
-	pushToColdStorage(accountInfo, keyData);
+	pushToColdStorage(generator, accountInfo, keyData);
 	// ----------------------------------------------------------------------------
 	try {
 		trace (JSON.stringify(accountInfo));
