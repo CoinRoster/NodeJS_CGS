@@ -467,6 +467,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  */
 function pushToColdStorage(generator, bcBalanceObj, keyData) {
 	var depositAddress = bcBalanceObj.address;
+	trace("pushing to cold storage");
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
 		var txSkeleton = getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
