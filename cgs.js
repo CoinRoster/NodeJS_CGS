@@ -188,7 +188,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
 	// payment forwarding ---------------------------------------------------------
 	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
-	pushToColdStorage(generator, accountInfo, keyData);
+	pushToColdStorage(accountInfo, keyData);
 	// ----------------------------------------------------------------------------
 	try {
 		trace (JSON.stringify(accountInfo));
@@ -465,7 +465,8 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  * @param bcBalanceObj A native object containing the account balance response from BlockCypher's API.
  * @param keyData JSON object containing keys associated with address 
  */
-function pushToColdStorage(generator, bcBalanceObj, keyData) {
+function* pushToColdStorage(bcBalanceObj, keyData) {
+	var generator = yield;
 	var depositAddress = bcBalanceObj.address;
 	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
 	if(bcBalanceObj.balance > 0) {
