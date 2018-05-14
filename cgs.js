@@ -477,9 +477,10 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
 
+		var amount = bcBalanceObj.balance - serverConfig.APIInfo.minerFee;
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
-			outputs: [{addresses: [serverConfig.coldStorageAddress], value: (bcBalanceObj.balance - serverConfig.APIInfo.minerFee)}],
+			outputs: [{addresses: [serverConfig.coldStorageAddress], value: amount}],
 			fees: serverConfig.APIInfo.minerFee
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
@@ -494,7 +495,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 				//replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
 				return;
 			}
-			trace("unsigned tx:" + JSON.stringify(data) + JSON.stringify(err));
+			trace("unsigned tx:" + JSON.stringify(data));
 			// sign transaction and add public key
 			data.pubkeys = [];
 			data.signatures = data.tosign.map(function(tosign, n) {
