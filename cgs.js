@@ -402,7 +402,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	} else {
 		trace("Processing withdrawal from cash register");
 		var wif = cashRegister.wif;
-		var txSkeleton = yield getTxSkeleton (generator, cashRegister.account, requestData.params.toAddress, withdrawalSatoshisReq);
+		var txSkeleton = yield getTxSkeleton (cashRegister.account, requestData.params.toAddress, withdrawalSatoshisReq, generator);
 	}
 	// if (withdrawalSatoshisReq.greaterThan(satoshiBalanceConf)) {
 	// 	//withdraw from bankroll account
@@ -471,7 +471,7 @@ function* pushToColdStorage(generator, bcBalanceObj, keyData) {
 	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
-		var txSkeleton = yield getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
 		if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 			trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
@@ -728,13 +728,18 @@ function deriveAddress(rootAddressXPRV, index, derivePath) {
 * @param toAddr The receiving address.
 * @param sathoshis The number of satoshis to send in the transaction.
 */
-function getTxSkeleton (generator, fromAddr, toAddr, sathoshis) {
+function getTxSkeleton (fromAddr, toAddr, sathoshis, generator) {
 	request({
 		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/txs/new?token="+serverConfig.APIInfo.blockcypher.token,
 		method: "POST",
 		body:{"inputs":[{"addresses":[fromAddr]}], "outputs":[{"addresses":[toAddr], "value": Number(sathoshis)}], "fees":Number(serverConfig.APIInfo.blockcypher.minerFee.toString())},
 		json: true  
 	}, function (error, response, body){
+		if (generator === undefined) {
+			console.log('body:');
+			console.log(body);
+			return body;
+		}
 		generator.next(body);
 	});
 }
