@@ -501,7 +501,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 					trace(err);
 				} else {
 					trace("the deposited amount was successfully forwarded to cold storage:");
-					trace(data);
+					trace(JSON.stringify(data));
 				}
 			});
 		  });
