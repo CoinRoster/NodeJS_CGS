@@ -433,7 +433,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
 		return;
 	}
-	var sentTx = yield sendTransaction(generator, signedTx);
+	var sentTx = yield sendTransaction(signedTx, generator);
 	trace ("      Posted transaction: "+JSON.stringify(sentTx));
 	returnData = sentTx.tx;
 	if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
@@ -465,8 +465,8 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  * @param bcBalanceObj A native object containing the account balance response from BlockCypher's API.
  * @param keyData JSON object containing keys associated with address 
  */
-function* pushToColdStorage(generator, bcBalanceObj, keyData) {
-	//var generator = yield;
+function pushToColdStorage(generator, bcBalanceObj, keyData) {
+
 	var depositAddress = bcBalanceObj.address;
 	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
 	if(bcBalanceObj.balance > 0) {
@@ -486,7 +486,7 @@ function* pushToColdStorage(generator, bcBalanceObj, keyData) {
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
 			return;
 		}
-		var sentTx = sendTransaction(generator, signedTx);
+		var sentTx = sendTransaction(signedTx);
 		trace ("      Posted transaction: "+JSON.stringify(sentTx));
 		returnData = sentTx.tx;
 		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
@@ -772,13 +772,16 @@ function signTxSkeleton (txObject, signingWIF) {
 * @param generator The generator function to call when the asynchronous operation has completed.
 * @param txObject The transaction to send.
 */
-function sendTransaction(generator, txObject) {
+function sendTransaction(txObject, generator) {
 	request({
 		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/txs/send?token="+serverConfig.APIInfo.blockcypher.token,
 		method: "POST",
 		body: txObject,
 		json: true    
 	}, function (error, response, body){
+		if (generator === undefined) {
+			return body;
+		}
 		generator.next(body);
 	});
 }
