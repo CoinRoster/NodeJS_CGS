@@ -484,7 +484,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			//fees: serverConfig.APIInfo.minerFee
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
-		
+		trace("creating tx: " + JSON.stringify(newtx));
 		bcapi.newTX(newtx, function(err,data) {
 			if (err) {
 				trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
