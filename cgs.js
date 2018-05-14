@@ -780,6 +780,8 @@ function sendTransaction(txObject, generator) {
 		json: true    
 	}, function (error, response, body){
 		if (generator === undefined) {
+			console.log('body:');
+			console.log(body);
 			return body;
 		}
 		generator.next(body);
