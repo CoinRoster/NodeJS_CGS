@@ -494,6 +494,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			  data.pubkeys.push(keys.getPublicKeyBuffer().toString("hex"));
 			  return keys.sign(new buffer.Buffer(tosign, "hex")).toDER().toString("hex");
 			});
+			trace("POST data:" + JSON.stringify(data));
 			// finally, post the transaction on the network
 			bcapi.sendTX(data, function(err, data) {
 				if (err !== null) {
