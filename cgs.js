@@ -479,7 +479,8 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
-			outputs: [{addresses: [serverConfig.coldStorageAddress], value: (bcBalanceObj.balance - serverConfig.APIInfo.minerFee)}]
+			outputs: [{addresses: [serverConfig.coldStorageAddress], value: (bcBalanceObj.balance - serverConfig.APIInfo.minerFee)}],
+			fees: serverConfig.APIInfo.minerFee
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
 		
@@ -509,7 +510,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 				}
 			});
 		  });
-		// var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		//  var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
 		// if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 		// 	trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
