@@ -472,7 +472,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 function pushToColdStorage(bcBalanceObj, keyData) {
 
 	var depositAddress = bcBalanceObj.address;
-	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
+	trace("pushing to cold storage: " + depositAddress);
 	var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
 
 	if(bcBalanceObj.balance > 0) {
@@ -485,12 +485,10 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
 		
 		bcapi.newTX(newtx, function(err,data) {
-			if(err) {
-			  trace("Errors found:");
-			  trace(err);
-			}
+		
 			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 				trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
+				trace (JSON.stringify(data));
 				//replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
 				return;
 			}
