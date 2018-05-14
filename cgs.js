@@ -465,13 +465,14 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  * @param bcBalanceObj A native object containing the account balance response from BlockCypher's API.
  * @param keyData JSON object containing keys associated with address 
  */
-function pushToColdStorage(bcBalanceObj, keyData) {
+function* pushToColdStorage(bcBalanceObj, keyData) {
 
+	var generator = yield;
 	var depositAddress = bcBalanceObj.address;
 	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
-		var txSkeleton = getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		var txSkeleton = yield getTxSkeleton(generator, depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
 		if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 			trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
@@ -486,7 +487,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
 			return;
 		}
-		var sentTx = sendTransaction(signedTx);
+		var sentTx = yield sendTransaction(signedTx, generator);
 		trace ("      Posted transaction: "+JSON.stringify(sentTx));
 		returnData = sentTx.tx;
 		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
