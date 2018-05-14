@@ -488,8 +488,8 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			if(err) {
 			  trace(err);
 			}
-			if ((data["error"] != null) && (data["error"] != undefined) && (data["error"] != "")) {
-				trace ("      Error creating transaction skeleton: \n"+data.error);
+			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
+				trace ("      Error creating transaction skeleton: \n"+data.errors.error);
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
 				return;
 			}
