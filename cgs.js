@@ -486,7 +486,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
 			return;
 		}
-		var sentTx = yield sendTransaction(signedTx, generator);
+		var sentTx = sendTransaction(signedTx, generator);
 		trace ("      Posted transaction: "+JSON.stringify(sentTx));
 		returnData = sentTx.tx;
 		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
