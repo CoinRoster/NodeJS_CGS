@@ -195,7 +195,6 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	pushToColdStorage(accountInfo, keyData);
 	// ----------------------------------------------------------------------------
 	try {
-		trace (JSON.stringify(accountInfo));
 		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
 		btc_balance_confirmed = btc_balance_confirmed.times(new BigNumber(0.00000001)); //convert from Satoshis to Bitcoin
 		var btc_balance_unconfirmed = new BigNumber(String(accountInfo.unconfirmed_balance));
