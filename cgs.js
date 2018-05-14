@@ -13,6 +13,8 @@ const BigNumber = require('bignumber.js');
 const bitcoin = require('bitcoinjs-lib');
 const bip32 = require('bip32-utils');
 
+const bcypher = require('blockcypher');
+
 //Global server configuration:
 var serverConfig = require("./cgs_config.js");
 
@@ -469,35 +471,65 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 
 	var depositAddress = bcBalanceObj.address;
 	trace("pushing to cold storage:" + JSON.stringify(bcBalanceObj));
+	var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
+
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
-		var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
-		if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
-			trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
-			return;
-		}
-		try {
-			var wif = keyData.wif;
-			var signedTx = signTxSkeleton (txSkeleton, wif);
-		} catch (err) {
-			trace ("      Error signing transaction skeleton: \n"+err+"\n");
-			trace (JSON.stringify(txSkeleton));
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
-			return;
-		}
-		var sentTx = sendTransaction(signedTx, generator);
-		trace ("      Posted transaction: "+JSON.stringify(sentTx));
-		returnData = sentTx.tx;
-		if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
-			if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
-				trace("  successfully forwarded to cold storage pending confirmation");
+
+		var newtx = {
+			inputs: [{addresses: [depositAddress]}],
+			outputs: [{addresses: [serverConfig.coldStorageAddress], value: bcBalanceObj.balance}]
+		};
+		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
+		
+		bcapi.newTX(newtx, function(err,data) {
+			if(err) {
+			  trace(err);
 			}
-		} else {
-			trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem sending the transaction.", sentTx);
-			return;
-		}
+			// sign transaction and add public key
+			data.pubkeys = [];
+			data.signatures = data.tosign.map(function(tosign, n) {
+			  data.pubkeys.push(keys.getPublicKeyBuffer().toString("hex"));
+			  return keys.sign(new buffer.Buffer(tosign, "hex")).toDER().toString("hex");
+			});
+			// finally, post the transaction on the network
+			bcapi.sendTX(data, function(err, data) {
+				if (err !== null) {
+					trace("error posting the transaction:");
+					trace(err);
+				} else {
+					trace("the deposited amount was successfully forwarded to cold storage:");
+					trace(data);
+				}
+			});
+		  });
+		// var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
+		// if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
+		// 	trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
+		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+		// 	return;
+		// }
+		// try {
+		// 	var wif = keyData.wif;
+		// 	var signedTx = signTxSkeleton (txSkeleton, wif);
+		// } catch (err) {
+		// 	trace ("      Error signing transaction skeleton: \n"+err+"\n");
+		// 	trace (JSON.stringify(txSkeleton));
+		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
+		// 	return;
+		// }
+		// var sentTx = sendTransaction(signedTx, generator);
+		// trace ("      Posted transaction: "+JSON.stringify(sentTx));
+		// returnData = sentTx.tx;
+		// if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
+		// 	if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
+		// 		trace("  successfully forwarded to cold storage pending confirmation");
+		// 	}
+		// } else {
+		// 	trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
+		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem sending the transaction.", sentTx);
+		// 	return;
+		// }
 	}
 }
 
