@@ -478,7 +478,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		trace("positive balance in deposit account, pushing to cold storage")
 		
 		var amount = new BigNumber(bcBalanceObj.balance);
-		trace("balance: " + balance + " " + serverConfig.APIInfo.minerFee));
+		trace("balance: " + balance + " " + serverConfig.APIInfo.minerFee);
 		amount = amount.minus(serverConfig.APIInfo.minerFee);
 
 		var newtx = {
