@@ -485,7 +485,9 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
 		
 		bcapi.newTX(newtx, function(err,data) {
-		
+			if (err) {
+				trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
+			}
 			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 				trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
 				trace (JSON.stringify(data));
