@@ -479,7 +479,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
-			outputs: [{addresses: [serverConfig.coldStorageAddress], value: bcBalanceObj.balance}]
+			outputs: [{addresses: [serverConfig.coldStorageAddress], value: (bcBalanceObj.balance - serverConfig.APIInfo.minerFee)}]
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
 		
