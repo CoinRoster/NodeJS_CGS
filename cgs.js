@@ -476,12 +476,14 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
+		
+		var balance = new BigNumber(bcBalanceObj.balance);
+		var amount = balance.minus(serverConfig.APIInfo.minerFee);
 
-		var amount = bcBalanceObj.balance - serverConfig.APIInfo.minerFee;
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
 			outputs: [{addresses: [serverConfig.coldStorageAddress], value: amount}],
-			//fees: serverConfig.APIInfo.minerFee
+			fees: serverConfig.APIInfo.minerFee
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
 		trace("creating tx: " + JSON.stringify(newtx));
