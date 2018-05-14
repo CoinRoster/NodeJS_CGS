@@ -477,9 +477,8 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 	if(bcBalanceObj.balance > 0) {
 		trace("positive balance in deposit account, pushing to cold storage")
 		
-		var amount = new BigNumber(bcBalanceObj.balance);
-		trace("balance: " + amount + " " + serverConfig.APIInfo.blockcypher.minerFee);
-		amount = amount.minus(serverConfig.APIInfo.blockcypher.minerFee);
+		var amount = bcBalanceObj.balance;
+		amount = amount - serverConfig.APIInfo.blockcypher.minerFee;
 
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
@@ -492,7 +491,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			if (err) {
 				trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
 			}
-			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "") && (data["error"] != null) ) {
+			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 				trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
 				trace (JSON.stringify(data));
 				//replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
