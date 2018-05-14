@@ -488,6 +488,11 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			if(err) {
 			  trace(err);
 			}
+			if ((data["error"] != null) && (data["error"] != undefined) && (data["error"] != "")) {
+				trace ("      Error creating transaction skeleton: \n"+data.error);
+				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+				return;
+			}
 			// sign transaction and add public key
 			data.pubkeys = [];
 			data.signatures = data.tosign.map(function(tosign, n) {
