@@ -15,6 +15,7 @@ const bip32 = require('bip32-utils');
 
 const bcypher = require('blockcypher');
 const bigi = require('bigi');
+const buffer = require('buffer');
 
 //Global server configuration:
 var serverConfig = require("./cgs_config.js");
