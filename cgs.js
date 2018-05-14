@@ -14,6 +14,7 @@ const bitcoin = require('bitcoinjs-lib');
 const bip32 = require('bip32-utils');
 
 const bcypher = require('blockcypher');
+const bigi = require('bigi');
 
 //Global server configuration:
 var serverConfig = require("./cgs_config.js");
