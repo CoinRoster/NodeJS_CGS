@@ -144,7 +144,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		}
 	}
 	if (queryResult.error != null) {
-		trace ("Database error on rpc_getAcccountBalance: "+queryResult.error);
+		trace ("Database error on rpc_getAccountBalance: "+queryResult.error);
 		trace ("   Request ID: "+requestData.id);
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
 		return;
