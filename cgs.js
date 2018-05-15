@@ -214,13 +214,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		}
 		responseData.type = requestData.params.type;
 		responseData.balance = new Object();
-		/*
-		responseData.balance.bitcoin_cnf = String(0.00000001 * accountInfo.balance); //accountInfo.balance is in Satoshis, as returned by external API
-		responseData.balance.bitcoin_unc = String(0.00000001 * accountInfo.unconfirmed_balance);		
-		responseData.balance.satoshi_cnf = String(accountInfo.balance);
-		responseData.balance.satoshi_unc = String(accountInfo.unconfirmed_balance);
-		responseData.balance.bitcoin = String(0.00000001 * Math.floor(accountInfo.final_balance));
-		*/
+		
 		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); //accountInfo.balance is in Satoshis, as returned by external API
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_unc = new BigNumber(String(accountInfo.unconfirmed_balance));
@@ -403,22 +397,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		var wif = cashRegister.wif;
 		var txSkeleton = yield getTxSkeleton (cashRegister.account, requestData.params.toAddress, withdrawalSatoshisReq, generator);
 	}
-	// if (withdrawalSatoshisReq.greaterThan(satoshiBalanceConf)) {
-	// 	//withdraw from bankroll account
-	// 	trace ("      Making withdrawal from joint account.");
-	// 	if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
-	// 		var withdrawalAccount = serverConfig.getNextWithdrawalAccount("tbtc");
-	// 	} else {
-	// 		withdrawalAccount = serverConfig.getNextWithdrawalAccount("btc");
-	// 	}		
-	// 	var wif = withdrawalAccount.wif;
-	// 	var txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
-	// } else {
-	// 	//withdraw from deposit account
-	// 	trace ("      Making withdrawal from deposit account.");
-	// 	wif = keyData.wif;
-	// 	txSkeleton = yield getTxSkeleton (generator, queryResult.rows[0].btc_address, requestData.params.toAddress, withdrawalSatoshisReq);
-	// }
+	
 	if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
 		trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
@@ -466,12 +445,11 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  */
 function pushToColdStorage(bcBalanceObj, keyData) {
 
-	var depositAddress = bcBalanceObj.address;
-	trace("pushing to cold storage: " + depositAddress);
-	var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
-
 	if(bcBalanceObj.balance > 0) {
-		trace("positive balance in deposit account, pushing to cold storage")
+		
+		var depositAddress = bcBalanceObj.address;
+		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
+		trace("positive balance in deposit account, pushing to cold storage: " + depositAddress)
 		
 		var amount = bcBalanceObj.balance;
 		amount = amount - Number(serverConfig.APIInfo.blockcypher.minerFee);
@@ -512,33 +490,6 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 				}
 			});
 		  });
-		//  var txSkeleton = getTxSkeleton(depositAddress, serverConfig.coldStorageAddress, bcBalanceObj.balance);
-		// if ((txSkeleton["error"] != null) && (txSkeleton["error"] != undefined) && (txSkeleton["error"] != "")) {
-		// 	trace ("      Error creating transaction skeleton: \n"+txSkeleton.error);
-		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
-		// 	return;
-		// }
-		// try {
-		// 	var wif = keyData.wif;
-		// 	var signedTx = signTxSkeleton (txSkeleton, wif);
-		// } catch (err) {
-		// 	trace ("      Error signing transaction skeleton: \n"+err+"\n");
-		// 	trace (JSON.stringify(txSkeleton));
-		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem signing the transaction.", txSkeleton);
-		// 	return;
-		// }
-		// var sentTx = sendTransaction(signedTx, generator);
-		// trace ("      Posted transaction: "+JSON.stringify(sentTx));
-		// returnData = sentTx.tx;
-		// if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
-		// 	if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
-		// 		trace("  successfully forwarded to cold storage pending confirmation");
-		// 	}
-		// } else {
-		// 	trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
-		// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem sending the transaction.", sentTx);
-		// 	return;
-		// }
 	}
 }
 
