@@ -303,11 +303,12 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		return;
 	}
 	//---- UPDATE MINER FEE ----
+	var currentAPI = serverConfig.APIInfo.blockcypher;
 	if ((requestData.params["custom_fee"] == null) || (requestData.params["custom_fee"] == undefined) || (requestData.params["custom_fee"] == "")) {
 		trace ("Custom miner fee not provided");
 
 		var feeQueryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
-		var currentAPI = serverConfig.APIInfo.blockcypher;
+		
 		if (queryResult.error != null) {
 			trace ("   Could not retrieve miner fee from database! Using default: "+currentAPI.minerFee.toString());
 			trace (JSON.stringify(feeQueryResult.error));
