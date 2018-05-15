@@ -303,17 +303,24 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		return;
 	}
 	//---- UPDATE MINER FEE ----
-	var feeQueryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
-	var currentAPI = serverConfig.APIInfo.blockcypher;
-	if (queryResult.error != null) {
-		trace ("   Could not retrieve miner fee from database! Using default: "+currentAPI.minerFee.toString());
-		trace (JSON.stringify(feeQueryResult.error));
-	}
-	if (feeQueryResult.rows.length == 0) {
-		trace ("   Miner fee could not be found in database! Using default: "+currentAPI.minerFee.toString());
+	if ((requestData.params["custom_fee"] == null) || (requestData.params["custom_fee"] == undefined) || (requestData.params["custom_fee"] == "")) {
+		trace ("Custom miner fee not provided");
+
+		var feeQueryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
+		var currentAPI = serverConfig.APIInfo.blockcypher;
+		if (queryResult.error != null) {
+			trace ("   Could not retrieve miner fee from database! Using default: "+currentAPI.minerFee.toString());
+			trace (JSON.stringify(feeQueryResult.error));
+		}
+		if (feeQueryResult.rows.length == 0) {
+			trace ("   Miner fee could not be found in database! Using default: "+currentAPI.minerFee.toString());
+		} else {
+			currentAPI.minerFee = new BigNumber(String(feeQueryResult.rows[0].VALUE));
+			trace ("   Miner fee retrieved from database: "+currentAPI.minerFee.toString());
+		}
 	} else {
-		currentAPI.minerFee = new BigNumber(String(feeQueryResult.rows[0].VALUE));
-		trace ("   Miner fee retrieved from database: "+currentAPI.minerFee.toString());
+		trace ("Custom miner fee provided")
+		currentAPI.minerFee = new BigNumber(String(requestData.params["custom_fee"]));
 	}
 	//---- SET UP MAIN ACCOUNT VARIABLES ----
 	var BTCBalanceConf = new BigNumber(queryResult.rows[0].btc_c_balance);
