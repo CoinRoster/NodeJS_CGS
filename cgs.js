@@ -321,7 +321,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		}
 	} else {
 		trace ("Custom miner fee providedd " + requestData.params["custom_fee"] + " " + typeof(requestData.params["custom_fee"]));
-		currentAPI.minerFee = new BigNumber(String(requestData.params["custom_fee"]));
+		currentAPI.minerFee = new BigNumber(requestData.params["custom_fee"]);
 	}
 	//---- SET UP MAIN ACCOUNT VARIABLES ----
 	var BTCBalanceConf = new BigNumber(queryResult.rows[0].btc_c_balance);
