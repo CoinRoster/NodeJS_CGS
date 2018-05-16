@@ -320,7 +320,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 			trace ("   Miner fee retrieved from database: "+currentAPI.minerFee.toString());
 		}
 	} else {
-		trace ("Custom miner fee provided" + requestData.params["custom_fee"]);
+		trace ("Custom miner fee provided " + requestData.params["custom_fee"] + " " + typeof(requestData.params["custom_fee"]));
 		currentAPI.minerFee = new BigNumber(String(requestData.params["custom_fee"]));
 	}
 	//---- SET UP MAIN ACCOUNT VARIABLES ----
