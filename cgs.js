@@ -422,6 +422,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	var sentTx = yield sendTransaction(signedTx, generator);
 	trace ("      Posted transaction: "+JSON.stringify(sentTx));
 	returnData = sentTx.tx;
+	returnData.cashRegisterBalance = cashRegisterInfo.final_balance;
 	if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
 		if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
 			var btcRemaining = BTCBalanceConf_fee.minus(withdrawalSatoshisReq.dividedBy(satoshiPerBTC));
