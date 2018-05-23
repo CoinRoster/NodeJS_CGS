@@ -339,6 +339,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		trace ("   Checking live blockchain balance...");
 		var accountInfo=yield checkAccountBalance(generator, requestData.params.account);
 		accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
+		trace(JSON.stringify(accountInfo));
 		try {
 			var bitcoinAmount = 0.00000001 * accountInfo.balance; //convert from Satoshis to Bitcoin
 			var uc_bitcoinAmount = 0.00000001 * accountInfo.unconfirmed_balance;	
