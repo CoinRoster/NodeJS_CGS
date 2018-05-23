@@ -267,6 +267,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	checkParameter(requestData, "toAddress");	
 	checkParameter(requestData, "type");
 	checkParameter(requestData, "amount");
+	checkParameter(requestData, "user_balance");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
 		return;
@@ -288,6 +289,8 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		}
 		accountSet = false;
 	}
+
+	//=======================================================================================
 	if (accountSet) {
 		var queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `cr_account`=\""+requestData.params.craccount+"\" LIMIT 1", generator);
 	} else {
@@ -303,6 +306,9 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_NO_RESULTS, "No matching account or address.");
 		return;
 	}
+	//=======================================================================================
+
+
 	//---- UPDATE MINER FEE ----
 	var currentAPI = serverConfig.APIInfo.blockcypher;
 	if ((requestData.params["custom_fee"] == null) || (requestData.params["custom_fee"] == undefined) || (requestData.params["custom_fee"] == "")) {
@@ -321,17 +327,20 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 			trace ("   Miner fee retrieved from database: "+currentAPI.minerFee.toString());
 		}
 	} else {
-		trace ("Custom miner fee providedd " + requestData.params["custom_fee"] + " " + typeof(requestData.params["custom_fee"]));
+		trace ("Custom miner fee provided " + requestData.params["custom_fee"] + " " + typeof(requestData.params["custom_fee"]));
 		currentAPI.minerFee = new BigNumber(requestData.params["custom_fee"]);
 	}
+
 	//---- SET UP MAIN ACCOUNT VARIABLES ----
-	var BTCBalanceConf = new BigNumber(queryResult.rows[0].btc_c_balance);
-	var BTCBalanceUnc = new BigNumber(queryResult.rows[0].btc_u_balance);
+	var UserBtcBalance = new BigNumber(requestData.params["user_balance"]);
+
+	//var BTCBalanceUnc = new BigNumber(queryResult.rows[0].btc_u_balance);
+
 	var satoshiPerBTC = new BigNumber("100000000");
-	var satoshiBalanceConf = BTCBalanceConf.times(satoshiPerBTC);
+	var satoshiBalanceConf = UserBtcBalance.times(satoshiPerBTC);
 	trace ("satoshiBalanceConf="+satoshiBalanceConf);
 	trace ("serverConfig.APIInfo.blockcypher.minerFee.dividedBy(satoshiPerBTC)="+serverConfig.APIInfo.blockcypher.minerFee.dividedBy(satoshiPerBTC));
-	var BTCBalanceConf_fee = BTCBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
+	var BTCBalanceConf_fee = UserBtcBalance.minus(serverConfig.APIInfo.blockcypher.minerFee);
 	var satoshiBalanceConf_fee = satoshiBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
 	trace ("satoshiBalanceConf_fee="+satoshiBalanceConf_fee.toString());
 	// if (BTCBalanceConf.equals(0)) {
@@ -370,12 +379,12 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	// 		return;
 	// 	}
 	// }
-	trace ("satoshiBalanceConf_fee 2="+satoshiBalanceConf_fee.toString());
-	if (BTCBalanceConf.equals(0)) {
-		trace ("      Confirmed balance is 0.");
-		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_NSF_ERROR, "Confirmed BTC balance is 0.");
-		return;	
-	}
+	// trace ("satoshiBalanceConf_fee 2="+satoshiBalanceConf_fee.toString());
+	// if (BTCBalanceConf.equals(0)) {
+	// 	trace ("      Confirmed balance is 0.");
+	// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_NSF_ERROR, "Confirmed BTC balance is 0.");
+	// 	return;	
+	// }
 	if (satoshiBalanceConf_fee.lessThanOrEqualTo(0)) {
 		trace ("      Available balance minus miner fee is <= 0.");
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_NSF_ERROR, "Your available balance, minus the miner fee ("+serverConfig.APIInfo.blockcypher.minerFee.toString()+" satoshis) is insufficient to make a withdrawal.");
@@ -429,15 +438,17 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	returnData.cashRegisterBalance = cashRegisterInfo.final_balance;
 	if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
 		if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
-			var btcRemaining = BTCBalanceConf_fee.minus(withdrawalSatoshisReq.dividedBy(satoshiPerBTC));
-			var dbUpdates = "`btc_c_available`=\""+btcRemaining+"\"";
-			dbUpdates += "`last_login`=NOW()";
-			//update gaming.accounts
-			if (accountSet) {
-				var accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `cr_account`=\""+requestData.params.craccount+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
-			} else {
-				accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `btc_address`=\""+requestData.params.fromAddress+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
-			}
+			trace("Withdrawal Tx hash: " + sentTx.tx["hash"]);
+			// var btcRemaining = BTCBalanceConf_fee.minus(withdrawalSatoshisReq.dividedBy(satoshiPerBTC));
+			// var dbUpdates = "`btc_c_available`=\""+btcRemaining+"\"";
+			// dbUpdates += "`last_login`=NOW()";
+			// //update gaming.accounts
+			// if (accountSet) {
+			// 	var accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `cr_account`=\""+requestData.params.craccount+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
+			// } else {
+			// 	accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `btc_address`=\""+requestData.params.fromAddress+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
+			// }
+
 		}
 	} else {
 		trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
