@@ -262,8 +262,11 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 * 			object are handled by the HTTP request processor and responder and so should not be updated.
 */
 function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses) {
+	
 	var generator = yield;
 	var requestData = JSON.parse(postData);
+	
+	// Check input
 	checkParameter(requestData, "toAddress");	
 	checkParameter(requestData, "type");
 	checkParameter(requestData, "amount");
@@ -290,7 +293,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		accountSet = false;
 	}
 
-	//=======================================================================================
+	// DB query, pretty much redundant ======================================================
 	if (accountSet) {
 		var queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `cr_account`=\""+requestData.params.craccount+"\" LIMIT 1", generator);
 	} else {
@@ -309,7 +312,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	//=======================================================================================
 
 
-	//---- UPDATE MINER FEE ----
+	//---- UPDATE MINER FEE (redundancy)----
 	var currentAPI = serverConfig.APIInfo.blockcypher;
 	if ((requestData.params["custom_fee"] == null) || (requestData.params["custom_fee"] == undefined) || (requestData.params["custom_fee"] == "")) {
 		trace ("Custom miner fee not provided");
@@ -333,9 +336,6 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 
 	//---- SET UP MAIN ACCOUNT VARIABLES ----
 	var UserBtcBalance = new BigNumber(requestData.params["user_balance"]);
-
-	//var BTCBalanceUnc = new BigNumber(queryResult.rows[0].btc_u_balance);
-
 	var satoshiPerBTC = new BigNumber("100000000");
 	var satoshiBalanceConf = UserBtcBalance.times(satoshiPerBTC);
 	trace ("satoshiBalanceConf="+satoshiBalanceConf);
@@ -343,48 +343,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	var BTCBalanceConf_fee = UserBtcBalance.minus(serverConfig.APIInfo.blockcypher.minerFee);
 	var satoshiBalanceConf_fee = satoshiBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
 	trace ("satoshiBalanceConf_fee="+satoshiBalanceConf_fee.toString());
-	// if (BTCBalanceConf.equals(0)) {
-	// 	//confirmed balance is 0
-	// 	trace ("   Checking live blockchain balance...");
-	// 	var accountInfo=yield checkAccountBalance(generator, requestData.params.account);
-	// 	trace("account info: " + JSON.stringify(accountInfo));
-	// 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	// 	trace(JSON.stringify(accountInfo));
-	// 	try {
-	// 		var bitcoinAmount = 0.00000001 * accountInfo.balance; //convert from Satoshis to Bitcoin
-	// 		var uc_bitcoinAmount = 0.00000001 * accountInfo.unconfirmed_balance;	
-	// 		var total_oc_bitcoin = 0.00000001 * accountInfo.final_balance;
-	// 		var dbUpdates = "`btc_c_balance`=\""+String(bitcoinAmount)+"\",`btc_c_balance`=\""+String(uc_bitcoinAmount)+"\",`last_live_balance_check`=NOW()";
-	// 		if (accountSet) {
-	// 			var accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `cr_account`=\""+requestData.params.craccount+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);
-	// 		} else {
-	// 			accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `btc_address`=\""+requestData.params.fromAddress+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);
-	// 		}
-	// 		if (accountUpdateResult.error != null) {
-	// 			trace ("Database error on RPC_sendTransaction: "+accountUpdateResult.error);		
-	// 			trace ("   Request ID: "+requestData.id);
-	// 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was a database error when updating the account.");
-	// 			return;
-	// 		}
-	// 		BTCBalanceConf = new BigNumber(accountInfo.balance);
-	// 		BTCBalanceConf = BTCBalanceConf.dividedBy(satoshiPerBTC);
-	// 		satoshiBalanceConf = new BigNumber(accountInfo.balance);		
-	// 		satoshiBalanceUnc = new BigNumber(accountInfo.unconfirmed_balance);
-	// 		BTCBalanceUnc = satoshiBalanceUnc.dividedBy(satoshiPerBTC);
-	// 		BTCBalanceConf_fee = BTCBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
-	// 		satoshiBalanceConf_fee = satoshiBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
-	// 	} catch (err) {
-	// 		trace(err);
-	// 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Problem when updating balance.", err);
-	// 		return;
-	// 	}
-	// }
-	// trace ("satoshiBalanceConf_fee 2="+satoshiBalanceConf_fee.toString());
-	// if (BTCBalanceConf.equals(0)) {
-	// 	trace ("      Confirmed balance is 0.");
-	// 	replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_NSF_ERROR, "Confirmed BTC balance is 0.");
-	// 	return;	
-	// }
+
 	if (satoshiBalanceConf_fee.lessThanOrEqualTo(0)) {
 		trace ("      Available balance minus miner fee is <= 0.");
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_NSF_ERROR, "Your available balance, minus the miner fee ("+serverConfig.APIInfo.blockcypher.minerFee.toString()+" satoshis) is insufficient to make a withdrawal.");
@@ -439,16 +398,6 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	if ((sentTx["tx"] != undefined) && (sentTx["tx"] != null)) {
 		if ((sentTx.tx["hash"] != null) && (sentTx.tx["hash"] != undefined) && (sentTx.tx["hash"] != "") && (sentTx.tx["hash"] != "NULL")) {
 			trace("Withdrawal Tx hash: " + sentTx.tx["hash"]);
-			// var btcRemaining = BTCBalanceConf_fee.minus(withdrawalSatoshisReq.dividedBy(satoshiPerBTC));
-			// var dbUpdates = "`btc_c_available`=\""+btcRemaining+"\"";
-			// dbUpdates += "`last_login`=NOW()";
-			// //update gaming.accounts
-			// if (accountSet) {
-			// 	var accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `cr_account`=\""+requestData.params.craccount+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
-			// } else {
-			// 	accountUpdateResult = yield db.query("UPDATE `coinroster`.`cgs` SET "+dbUpdates+" WHERE `btc_address`=\""+requestData.params.fromAddress+"\" AND `index`="+queryResult.rows[0].index+" LIMIT 1", generator);	
-			// }
-
 		}
 	} else {
 		trace ("      Error sending transaction: \n"+JSON.stringify(sentTx));
