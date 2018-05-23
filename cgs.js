@@ -190,7 +190,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	trace("final balance: " + JSON.stringify(accountInfo));
+	
 	// payment forwarding ---------------------------------------------------------
 	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
 	pushToColdStorage(accountInfo, keyData);
@@ -363,6 +363,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 			BTCBalanceConf_fee = BTCBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
 			satoshiBalanceConf_fee = satoshiBalanceConf.minus(serverConfig.APIInfo.blockcypher.minerFee);
 		} catch (err) {
+			trace(err);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Problem when updating balance.", err);
 			return;
 		}
