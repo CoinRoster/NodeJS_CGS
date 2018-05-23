@@ -338,6 +338,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 		//confirmed balance is 0
 		trace ("   Checking live blockchain balance...");
 		var accountInfo=yield checkAccountBalance(generator, requestData.params.account);
+		trace("account info: " + JSON.stringify(accountInfo));
 		accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
 		trace(JSON.stringify(accountInfo));
 		try {
