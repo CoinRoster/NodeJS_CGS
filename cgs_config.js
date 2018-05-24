@@ -3,7 +3,7 @@ const BigNumber = require('bignumber.js');
 
 // *** Cryptocurrency Gateway Services Server Configuration ***
 
-exports.balanceCheckInterval = 20; //the number of seconds required to elapse between successive external balance update API calls
+exports.balanceCheckInterval = 0; //the number of seconds required to elapse between successive external balance update API calls
 
 //accounts used when withdrawals that exceed original deposit amounts
 exports.withdrawalAccounts = [
