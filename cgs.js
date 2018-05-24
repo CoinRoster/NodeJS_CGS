@@ -123,10 +123,14 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 * 			object are handled by the HTTP request processor and responder and so should not be updated.
 */
 function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
+
 	var generator = yield;
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
+	
+	// check request data for required params
 	checkParameter(requestData, "type");
+	checkParameter(requestData, "user_balance");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
 		return;
@@ -154,11 +158,14 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 	if ((queryResult.rows[0].last_live_balance_check != null) && (queryResult.rows[0].last_live_balance_check != "NULL")) {
+		trace("last date check exists");
 		var lastCheckDateObj = new Date(queryResult.rows[0].last_live_balance_check);	
 	} else {
+		trace("no last date check");
 		lastCheckDateObj = new Date(1970,1,1);	
 	}
 	if ((Date.now() - lastCheckDateObj.valueOf()) < (serverConfig.balanceCheckInterval * 1000)) {
+		trace("waiting for deposit check interval to elapse");
 		//deposit check interval has not elapsed yet
 		if (accountSet) {
 			responseData.craccount = requestData.params.craccount;
