@@ -431,7 +431,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
 		trace("positive balance in deposit account, pushing to cold storage: " + depositAddress)
 		
-		var amount = new BigNumber(bcBalanceObj.balance);
+		var amount = new BigNumber(bcBalanceObj.final_balance);
 		amount = amount.minus(serverConfig.APIInfo.blockcypher.minerFee);
 		trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.minerFee);
 		var newtx = {
