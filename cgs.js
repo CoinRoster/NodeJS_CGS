@@ -431,8 +431,8 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
 		trace("positive balance in deposit account, pushing to cold storage: " + depositAddress)
 		
-		var amount = bcBalanceObj.balance;
-		amount = amount - Number(serverConfig.APIInfo.blockcypher.minerFee);
+		var amount = new BigNumber(bcBalanceObj.balance);
+		amount = amount.minus(serverConfig.APIInfo.blockcypher.minerFee);
 		trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.minerFee);
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
@@ -458,7 +458,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 			  data.pubkeys.push(keys.getPublicKeyBuffer().toString("hex"));
 			  return keys.sign(new buffer.Buffer(tosign, "hex")).toDER().toString("hex");
 			});
-			trace("POST data:" + JSON.stringify(data));
+			
 			// finally, post the transaction on the network
 			bcapi.sendTX(data, function(err, data) {
 				if (err !== null) {
