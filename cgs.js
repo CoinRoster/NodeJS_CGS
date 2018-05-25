@@ -196,8 +196,9 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	}
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
+	trace('account information: ' + JSON.stringify(accountInfo));
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	
+	trace('account information after check: ' + JSON.stringify(accountInfo));
 	// payment forwarding ---------------------------------------------------------
 	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
 	pushToColdStorage(accountInfo, keyData);
