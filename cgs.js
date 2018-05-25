@@ -196,9 +196,8 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	}
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
-	trace('account information: ' + JSON.stringify(accountInfo));
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	trace('account information after check: ' + JSON.stringify(accountInfo));
+
 	// payment forwarding ---------------------------------------------------------
 	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
 	pushToColdStorage(accountInfo, keyData);
@@ -434,7 +433,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		
 		var amount = bcBalanceObj.balance;
 		amount = amount - Number(serverConfig.APIInfo.blockcypher.minerFee);
-
+		trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.minerFee);
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
 			outputs: [{addresses: [serverConfig.coldStorageAddress], value: amount}],
