@@ -436,7 +436,7 @@ function pushToColdStorage(bcBalanceObj, keyData) {
 		trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.minerFee);
 		var newtx = {
 			inputs: [{addresses: [depositAddress]}],
-			outputs: [{addresses: [serverConfig.coldStorageAddress], value: amount}],
+			outputs: [{addresses: [serverConfig.coldStorageAddress], value: Number(amount)}],
 			fees: Number(serverConfig.APIInfo.blockcypher.minerFee)
 		};
 		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
