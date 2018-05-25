@@ -426,7 +426,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 function pushToColdStorage(bcBalanceObj, keyData) {
 
 	if(bcBalanceObj.final_balance > 0) {
-		
+		trace("balance: " + bcBalanceObj.balance + ", final balance: " + bcBalanceObj.final_balance);
 		var depositAddress = bcBalanceObj.address;
 		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
 		trace("positive balance in deposit account, pushing to cold storage: " + depositAddress)
