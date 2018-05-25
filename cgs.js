@@ -425,7 +425,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
  */
 function pushToColdStorage(bcBalanceObj, keyData) {
 
-	if(bcBalanceObj.final_xbalance > 0) {
+	if(bcBalanceObj.final_balance > 0) {
 		
 		var depositAddress = bcBalanceObj.address;
 		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
