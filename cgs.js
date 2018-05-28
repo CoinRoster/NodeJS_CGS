@@ -427,8 +427,9 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 * @param batchResponses An object containing expected responses for a batch. If null, this function is not being called as part of a batch. Usually the contents of this
 * 			object are handled by the HTTP request processor and responder and so should not be updated.
 */
-async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponses) {
+function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponses) {
 
+	var generator = yield;
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
 	
@@ -458,7 +459,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 	
 			if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
-				queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\""+requestData.params.address+"\"");	
+				queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\""+requestData.params.address+"\"", generator);	
 			} else {
 				// redundancy
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
@@ -920,7 +921,9 @@ function invokeRPCFunction(postData, requestObj, responseObj, batchResponses) {
 				gen.next(gen);
 				break;
 			case "pushToColdStorage":
-				RPC_pushToColdStorage(postData, requestData, responseObj, batchResponses);
+				gen = RPC_pushToColdStorage(postData, requestData, responseObj, batchResponses);
+				gen.next();
+				gen.next(gen);
 				break;
 			default:
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_METHOD_NOT_FOUND_ERROR, "Method \""+requestData.method+"\" not yet implemented.");			
