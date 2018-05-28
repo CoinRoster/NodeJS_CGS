@@ -438,7 +438,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	
 	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	var bcapi = new bcypher(requestData.params["type"],serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher(requestData.params["type"], 'test3', serverConfig.APIInfo.blockcypher.token);
 
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
@@ -500,7 +500,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
 					return;
 				}
-				// sign transactionandadd public key
+				// sign transaction and add public key
 				data.pubkeys = [];
 				data.signatures = data.tosign.map(function(tosign, n) {
 					var keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];
@@ -519,14 +519,14 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 					} else {
 						trace("the deposited amount was successfully forwarded to cold storage:");
 						trace(JSON.stringify(data));			
-						replyResult(postData, requestObj, responseObj, batchResponses, returnData);
+						replyResult(postData, requestObj, responseObj, batchResponses, "the deposited amount was successfully forwarded to cold storage");
 						return;
 					}
 				});
 			});
 		}
 		trace('no balance');
-		replyResult(postData, requestObj, responseObj, batchResponses, returnData);
+		replyResult(postData, requestObj, responseObj, batchResponses, "No balance");
 	});
 }
 
