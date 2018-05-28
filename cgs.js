@@ -436,10 +436,9 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	checkParameter(requestData, "address");
 	checkParameter(requestData, "type");
 	
-	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
+	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	trace("address1: " + requestData["params"].address)
-	trace("address2: " + requestData.params["address"]);
+	var bcapi = new bcypher('btc','test3', "dea4a0d80c0a4567a758e2f6daa49050");
 
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
@@ -485,7 +484,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 			var newtx = {
 				inputs: [{addresses: [requestData["params"].address]}],
 				outputs: [{addresses: [serverConfig.coldStorageAddress], value: Number(amount)}],
-				fees: Number(serverConfig.APIInfo.blockcypher.storageMinerFee)
+				fees: Number(serverConfig.APIInfo.blockcypher.storageMinerFee)	
 			};
 
 			trace("creating tx: " + JSON.stringify(newtx));
