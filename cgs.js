@@ -459,9 +459,9 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
 			var queryResult;
-			
+
 			if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
-				var queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params.address + "\"", generator);	
+				var queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params["address"] + "\"", generator);	
 			} else {
 				// redundancy
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
