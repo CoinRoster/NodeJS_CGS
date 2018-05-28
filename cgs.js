@@ -443,7 +443,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	// get balance of sender address
 	bcapi.getAddrBal("mvQAa9oKVrtpUBbySswJmcUQwpzGxonxvM", {omitWalletAddresses: true}, function(err, data) {
 
-		console.log('The wallet '+ sendAddr + ' contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
+		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
  
 		if(err) {
 			trace("balance check error: " + err)
