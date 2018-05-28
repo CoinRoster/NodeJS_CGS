@@ -130,7 +130,6 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	
 	// check request data for required params
 	checkParameter(requestData, "type");
-	checkParameter(requestData, "user_balance");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
 		return;
@@ -197,10 +196,12 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	trace('final balance' + accountInfo.final_balance);
-	// payment forwarding ---------------------------------------------------------
-	keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
-	pushToColdStorage(accountInfo, keyData);
+
+	// trace('final balance' + accountInfo.final_balance);
+	// // payment forwarding ---------------------------------------------------------
+	// keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
+	//pushToColdStorage(accountInfo, keyData);
+
 	// ----------------------------------------------------------------------------
 	try {
 		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
@@ -414,64 +415,114 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 	replyResult(postData, requestObj, responseObj, batchResponses, returnData);
 }
 
-//*************************** UTILITY FUNCTIONS *************************************
-
 /**
- * Pushes any balance in an address to the cold storage address
- * 
- * @param generator The generator function to return the API result to.
- * @param bcBalanceObj A native object containing the account balance response from BlockCypher's API.
- * @param keyData JSON object containing keys associated with address 
- */
-function pushToColdStorage(bcBalanceObj, keyData) {
+* Pushes any balance in an address to the cold storage address
+* 
+* @param postData The POST data included with the request:
+					address (String, optional): The cryptocurrency address for which to return a balance. If 'craccount' is supplied then this parameter is ignored.
+					craccount (String, optional): The CoinRoster account associated with the cryptocurrency. If this parameter is supplied then 'address' is ignored.
+					type (String, required): The cryptocurrency type of the 'address' parameter (e.g. "btc").						
+* @param requestObj The request object (https://nodejs.org/api/http.html#http_class_http_incomingmessage).
+* @param responseObj The response object (https://nodejs.org/api/http.html#http_class_http_serverresponse).
+* @param batchResponses An object containing expected responses for a batch. If null, this function is not being called as part of a batch. Usually the contents of this
+* 			object are handled by the HTTP request processor and responder and so should not be updated.
+*/
+async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponses) {
 
-	if(bcBalanceObj.balance > 0 && bcBalanceObj.final_balance > 0) {
-		trace("balance: " + bcBalanceObj.balance + ", final balance: " + bcBalanceObj.final_balance);
-		var depositAddress = bcBalanceObj.address;
-		var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token)
-		trace("positive balance in deposit account, pushing to cold storage: " + depositAddress)
-		
-		var amount = new BigNumber(bcBalanceObj.final_balance);
-		amount = amount.minus(serverConfig.APIInfo.blockcypher.minerFee);
-		trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.minerFee);
-		var newtx = {
-			inputs: [{addresses: [depositAddress]}],
-			outputs: [{addresses: [serverConfig.coldStorageAddress], value: Number(amount)}],
-			fees: Number(serverConfig.APIInfo.blockcypher.minerFee)
-		};
-		var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
-		trace("creating tx: " + JSON.stringify(newtx));
-		bcapi.newTX(newtx, function(err,data) {
-			if (err) {
-				trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
-			}
-			if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
-				trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
-				trace (JSON.stringify(data));
-				//replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+	var requestData = JSON.parse(postData);
+	var responseData = new Object();
+	
+	// check request data for required params and initialize bcypher object
+	checkParameter(requestData, "address");
+	checkParameter(requestData, "type");
+	
+	var bcapi = new bcypher(requestData["params"].type, serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
+
+	// get balance of sender address
+	bcapi.getAddrBal(requestData["params"].address, (err, data) => {
+
+		data = checkBalanceObj(data);
+		trace("balance: " + data.balance + ", final balance: " + data.final_balance);
+
+		if(data.balance > 0 && data.final_balance > 0) {
+
+			trace("positive balance in deposit account, pushing to cold storage: " + requestData["params"].address)
+	
+			if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
+				queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\""+requestData.params.address+"\"", generator);	
+			} else {
+				// redundancy
+				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
 				return;
 			}
-			trace("unsigned tx:" + JSON.stringify(data));
-			// sign transaction and add public key
-			data.pubkeys = [];
-			data.signatures = data.tosign.map(function(tosign, n) {
-			  data.pubkeys.push(keys.getPublicKeyBuffer().toString("hex"));
-			  return keys.sign(new buffer.Buffer(tosign, "hex")).toDER().toString("hex");
-			});
-			
-			// finally, post the transaction on the network
-			bcapi.sendTX(data, function(err, data) {
-				if (err !== null) {
-					trace("error posting the transaction:");
-					trace(err);
-				} else {
-					trace("the deposited amount was successfully forwarded to cold storage:");
-					trace(JSON.stringify(data));
+
+			if (queryResult.error != null) {
+				trace ("Database error on rpc_pushToColdStorage: "+queryResult.error);
+				trace ("   Request ID: "+requestData.id);
+				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+				return;
+			}
+
+			if (queryResult.rows.length == 0) {
+				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_NO_RESULTS, "No matching account or address.");
+				return;
+			}
+
+			var amount = new BigNumber(data.final_balance);
+			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
+			trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
+
+			var newtx = {
+				inputs: [{addresses: [requestData["params"].address]}],
+				outputs: [{addresses: [serverConfig.coldStorageAddress], value: Number(amount)}],
+				fees: Number(serverConfig.APIInfo.blockcypher.storageMinerFee)
+			};
+
+			trace("creating tx: " + JSON.stringify(newtx));
+
+			bcapi.newTX(newtx, function(err,data) {
+				if (err) {
+					trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
 				}
+				if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
+					trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
+					trace (JSON.stringify(data));
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					return;
+				}
+				// sign transactionandadd public key
+				data.pubkeys = [];
+				data.signatures = data.tosign.map(function(tosign, n) {
+					var keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];
+					var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
+					data.pubkeys.push(keys.getPublicKeyBuffer().toString("hex"));
+					console.log(data);
+					return keys.sign(new buffer.Buffer(tosign, "hex")).toDER().toString("hex");
+				});
+				
+				// finally, post the transaction on the network
+				bcapi.sendTX(data, (err, data) => {
+					if (err !== null) {
+						trace("error posting the transaction:");
+						replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+						return;
+					} else {
+						trace("the deposited amount was successfully forwarded to cold storage:");
+						trace(JSON.stringify(data));			
+						replyResult(postData, requestObj, responseObj, batchResponses, returnData);
+						return;
+					}
+				});
 			});
-		  });
-	}
+
+		}
+	});
 }
+
+//*************************** UTILITY FUNCTIONS *************************************
+
+// TODO: function getCGSValue(requestData) 
 
 /**
 * Checks a Bitcoin account balance via an external API request.
@@ -485,7 +536,11 @@ function checkAccountBalance(generator, account) {
 		method: "GET",
 		json: true		
 	}, function (err, response, body){ 
-		generator.next(body);				
+		if(generator){
+			generator.next(body);	
+		} else {
+			return body;
+		}
 	});
 }
 
@@ -854,6 +909,8 @@ function invokeRPCFunction(postData, requestObj, responseObj, batchResponses) {
 				gen.next();
 				gen.next(gen);
 				break;
+			case "pushToColdStorage":
+				RPC_pushToColdStorage(postData, requestData, responseData, batchResponses);
 			default:
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_METHOD_NOT_FOUND_ERROR, "Method \""+requestData.method+"\" not yet implemented.");			
 				break;
