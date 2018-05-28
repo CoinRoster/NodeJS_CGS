@@ -913,7 +913,7 @@ function invokeRPCFunction(postData, requestObj, responseObj, batchResponses) {
 				gen.next(gen);
 				break;
 			case "pushToColdStorage":
-				RPC_pushToColdStorage(postData, requestData, responseData, batchResponses);
+				RPC_pushToColdStorage(postData, requestData, responseObj, batchResponses);
 			default:
 				replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_METHOD_NOT_FOUND_ERROR, "Method \""+requestData.method+"\" not yet implemented.");			
 				break;
