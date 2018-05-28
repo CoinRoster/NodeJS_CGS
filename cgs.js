@@ -447,7 +447,9 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
 			return;
 		}
+		
 		data = checkBalanceObj(data);
+		trace("data: " + data)
 		trace("balance: " + data.balance + ", final balance: " + data.final_balance);
 
 		if(data.balance > 0 && data.final_balance > 0) {
