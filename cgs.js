@@ -438,10 +438,10 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	
 	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	var bcapi = new bcypher('btc','test3', "dea4a0d80c0a4567a758e2f6daa49050");
+	var bcapi = new bcypher(requestData.params["type"],serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 
 	// get balance of sender address
-	bcapi.getAddrBal("mvQAa9oKVrtpUBbySswJmcUQwpzGxonxvM", {omitWalletAddresses: true}, function(err, data) {
+	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
 
 		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
  
