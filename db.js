@@ -82,6 +82,7 @@ exports.query = (queryStr, generator) => {
 		queryResultsObject.error = error;
 		queryResultsObject.rows = rows;
 		queryResultsObject.columns = columns;
+		console.log(queryResultsObject);
 		generator.next(queryResultsObject);
 	});
 }
