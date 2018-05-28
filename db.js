@@ -82,7 +82,11 @@ exports.query = (queryStr, generator) => {
 		queryResultsObject.error = error;
 		queryResultsObject.rows = rows;
 		queryResultsObject.columns = columns;
-		generator.next(queryResultsObject);
+		if(generator) {
+			generator.next(queryResultsObject);
+		} else {
+			return queryResultsObject;
+		}
 	});
 }
 
