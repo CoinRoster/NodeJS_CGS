@@ -457,7 +457,9 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		if(data.balance > 0 && data.final_balance > 0) {
 
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
-	
+			
+			var queryResult;
+			
 			if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
 				var queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params.address + "\"", generator);	
 			} else {
