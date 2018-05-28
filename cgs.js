@@ -436,11 +436,13 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	checkParameter(requestData, "address");
 	checkParameter(requestData, "type");
 	
-	var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	trace("api: " + bcapi.toString());
+	trace("address1: " + requestData["params"].address)
+	trace("address2: " + requestData.params["address"]);
+
 	// get balance of sender address
-	bcapi.getAddrBal(requestData["params"].address, {omitWalletAddresses: true}, function(err, data) {
+	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
 
 		if(err) {
 			trace("balance check error: " + err)
@@ -454,7 +456,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 
 		if(data.balance > 0 && data.final_balance > 0) {
 
-			trace("positive balance in deposit account, pushing to cold storage: " + requestData["params"].address)
+			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 	
 			if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
 				queryResult = db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\""+requestData.params.address+"\"", generator);	
