@@ -436,7 +436,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	checkParameter(requestData, "address");
 	checkParameter(requestData, "type");
 	
-	var bcapi = new bcypher(requestData["params"].type, "test3", serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher('btc', 'test3', serverConfig.APIInfo.blockcypher.token);
 	
 	trace("api: " + bcapi);
 	// get balance of sender address
