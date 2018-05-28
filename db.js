@@ -91,6 +91,21 @@ exports.query = (queryStr, generator) => {
 }
 
 /**
+* 
+* @param dbName The name of the database for which to retrieve a list of available tables.
+* @param generator The generator function to return query results to.
+*/
+exports.dbquery = (queryStr, generator) => {
+	connection.query(queryStr, function (error, rows, columns) {		
+		var queryResultsObject = new Object();
+		queryResultsObject.error = error;
+		queryResultsObject.rows = rows;
+		queryResultsObject.columns = columns;
+		return queryResultsObject;
+	});
+}
+
+/**
 * Closes all pooled connections to the databse (use with caution).
 */
 exports.closeAll = () => {
