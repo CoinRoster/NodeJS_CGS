@@ -442,6 +442,11 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	// get balance of sender address
 	bcapi.getAddrBal(requestData["params"].address, {omitWalletAddresses: true}, function(err, data) {
 
+		if(err) {
+			trace("balance check error: " + err)
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
+			return;
+		}
 		data = checkBalanceObj(data);
 		trace("balance: " + data.balance + ", final balance: " + data.final_balance);
 
