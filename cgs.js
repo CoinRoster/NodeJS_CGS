@@ -429,20 +429,17 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 */
 async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponses) {
 
-	trace('1');
 	var requestData = JSON.parse(postData);
-	trace('2');
 	var responseData = new Object();
-	trace('3');
+	
 	// check request data for required params and initialize bcypher object
 	checkParameter(requestData, "address");
-	trace('4');
 	checkParameter(requestData, "type");
-	trace('5');
+	
 	var bcapi = new bcypher(requestData["params"].type, serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
-	trace('6');
+
 	// get balance of sender address
-	bcapi.getAddrBal(requestData["params"].address, (err, data) => {
+	bcapi.getAddrBal(requestData["params"].address, function(err, data) {
 
 		data = checkBalanceObj(data);
 		trace("balance: " + data.balance + ", final balance: " + data.final_balance);
