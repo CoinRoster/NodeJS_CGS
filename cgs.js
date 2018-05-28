@@ -437,7 +437,8 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	checkParameter(requestData, "type");
 	
 	var bcapi = new bcypher(requestData["params"].type, serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
-	trace("address: " + requestData["params"].address);
+	
+	trace("api: " + bcapi);
 	// get balance of sender address
 	bcapi.getAddrBal(requestData["params"].address, {omitWalletAddresses: true}, function(err, data) {
 
