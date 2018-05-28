@@ -441,8 +441,10 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 	var bcapi = new bcypher('btc','test3', "dea4a0d80c0a4567a758e2f6daa49050");
 
 	// get balance of sender address
-	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
+	bcapi.getAddrBal("mvQAa9oKVrtpUBbySswJmcUQwpzGxonxvM", {omitWalletAddresses: true}, function(err, data) {
 
+		console.log('The wallet '+ sendAddr + ' contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
+ 
 		if(err) {
 			trace("balance check error: " + err)
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
