@@ -524,9 +524,10 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 					}
 				});
 			});
-
 		}
 	});
+	trace('no balance');
+	replyResult(postData, requestObj, responseObj, batchResponses, returnData);
 }
 
 //*************************** UTILITY FUNCTIONS *************************************
