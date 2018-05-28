@@ -77,7 +77,9 @@ exports.getTables = (dbName, callback) => {
 * @param generator The generator function to return query results to.
 */
 exports.query = (queryStr, generator) => {
-	connection.query(queryStr, function (error, rows, columns) {		
+	console.log('test');
+	connection.query(queryStr, function (error, rows, columns) {	
+		console.log('test');	
 		var queryResultsObject = new Object();
 		queryResultsObject.error = error;
 		queryResultsObject.rows = rows;
