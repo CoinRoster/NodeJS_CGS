@@ -452,7 +452,7 @@ async function RPC_pushToColdStorage(postData, requestObj, responseObj, batchRes
 		}
 		
 		data2 = checkBalanceObj(data);
-		trace("data: " + data2)
+		trace("data: " + data)
 		trace("balance: " + data2.balance + ", final balance: " + data2.final_balance);
 
 		if(data.balance > 0 && data.final_balance > 0) {
