@@ -36,6 +36,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var generator = yield;
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
+	trace('test1');
 	checkParameter(requestData, "type");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
@@ -99,6 +100,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
 		trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
 	}
+	trace('test2');
 	responseData.fees = new Object();
 	for (var APIName in serverConfig.APIInfo) {
 		currentAPI = serverConfig.APIInfo[APIName];
