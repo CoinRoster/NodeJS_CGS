@@ -478,6 +478,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
+			var responseData = new Object();
 			var amount = new BigNumber(data.final_balance);
 			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
 			trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
@@ -520,7 +521,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 					} else {
 						trace("the deposited amount was successfully forwarded to cold storage:");
 						trace(JSON.stringify(data));
-						var responseData = new Object();
+						
 						returnData.tx = data.tx; 			
 						replyResult(postData, requestObj, responseObj, batchResponses, returnData);
 						return;
@@ -529,7 +530,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			});
 		}
 		trace('no balance');
-		replyResult(postData, requestObj, responseObj, batchResponses, "No balance");
+		responseData.result = "no balance";
+		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	});
 }
 
