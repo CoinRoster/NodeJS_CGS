@@ -204,7 +204,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 
 	// ----------------------------------------------------------------------------
 	try {
-		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
+		var btc_balance_confirmed = new BigNumber(String(accountInfo.final_balance));
 		btc_balance_confirmed = btc_balance_confirmed.times(new BigNumber(0.00000001)); //convert from Satoshis to Bitcoin
 		var btc_balance_unconfirmed = new BigNumber(String(accountInfo.unconfirmed_balance));
 		btc_balance_unconfirmed = btc_balance_unconfirmed.times(new BigNumber(0.00000001));
@@ -224,7 +224,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.type = requestData.params.type;
 		responseData.balance = new Object();
 		
-		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); //accountInfo.balance is in Satoshis, as returned by external API
+		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.final_balance)); //accountInfo.balance is in Satoshis, as returned by external API
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_unc = new BigNumber(String(accountInfo.unconfirmed_balance));
 		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.times(new BigNumber(0.00000001));
