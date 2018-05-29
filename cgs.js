@@ -474,7 +474,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 		// data = checkBalanceObj(data);
 		trace('live balance check');
-		if(data.balance > 0 && data.final_balance > 0) {
+		if(data.final_balance > 0) {
 
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
