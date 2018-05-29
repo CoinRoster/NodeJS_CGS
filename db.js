@@ -77,14 +77,51 @@ exports.getTables = (dbName, callback) => {
 * @param generator The generator function to return query results to.
 */
 exports.query = (queryStr, generator) => {
+	connection.getConnection(function(err, connectionInstance) {
+		try {
+			if (err) {
+				console.error(err);
+			} else {
+				activeConnections.push(connectionInstance);
+				connectionInstance.query(queryStr, function (error, rows, columns) {		
+					var queryResultsObject = new Object();
+					queryResultsObject.error = error;
+					queryResultsObject.rows = rows;
+					queryResultsObject.columns = columns;
+					if (typeof(generator.next) == "function") {
+						generator.next(queryResultsObject);
+					} else if (typeof(generator) == "function") {
+						generator(queryResultsObject);
+					} else {
+						console.error ("Could't invoke handler for result: " +JSON.stringify(queryResultsObject));
+					}
+				});
+			}
+		} catch (err) {
+		} finally {
+			try {
+				connectionInstance.release();
+			} catch (err) {
+			}
+		}
+	});
+	/*
 	connection.query(queryStr, function (error, rows, columns) {		
 		var queryResultsObject = new Object();
 		queryResultsObject.error = error;
 		queryResultsObject.rows = rows;
 		queryResultsObject.columns = columns;
-		generator.next(queryResultsObject);
+		if (typeof(generator.next) == "function") {
+			generator.next(queryResultsObject);
+		} else if (typeof(generator) == "function") {
+			generator(queryResultsObject);
+		} else {
+			console.error ("Could't invoke handler for result: " +JSON.stringify(queryResultsObject));
+		}
 	});
+	*/
 }
+
 
 /**
 * Closes all pooled connections to the databse (use with caution).
