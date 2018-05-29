@@ -522,7 +522,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 						trace("the deposited amount was successfully forwarded to cold storage:");
 						trace(JSON.stringify(data));
 						
-						returnData.tx = data.tx; 			
+						responseData.tx = data.tx; 			
 						replyResult(postData, requestObj, responseObj, batchResponses, returnData);
 						return;
 					}
