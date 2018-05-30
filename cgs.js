@@ -168,44 +168,39 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		trace("no last date check");
 		lastCheckDateObj = new Date(1970,1,1);	
 	}
-	if ((Date.now() - lastCheckDateObj.valueOf()) < (serverConfig.balanceCheckInterval * 1000)) {
-		trace("waiting for deposit check interval to elapse");
-		//deposit check interval has not elapsed yet
-		if (accountSet) {
-			responseData.craccount = requestData.params.craccount;
-		} else {
-			responseData.address = requestData.params.address;
-		}
-		responseData.type = requestData.params.type;
-		responseData.balance = new Object();
-		/*
-		responseData.balance.bitcoin_cnf = String(queryResult.rows[0].btc_c_balance);
-		responseData.balance.bitcoin_unc = String(queryResult.rows[0].btc_u_balance);		
-		responseData.balance.satoshi_cnf = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_c_balance))); //convert from Bitcoin to Satoshis
-		responseData.balance.satoshi_unc = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_u_balance)));
-		responseData.balance.bitcoin = String(queryResult.rows[0].btc_c_balance + queryResult.rows[0].btc_u_balance);
-		*/
-		responseData.balance.bitcoin_cnf = new BigNumber(String(queryResult.rows[0].btc_c_balance));
-		responseData.balance.bitcoin_unc = new BigNumber(String(queryResult.rows[0].btc_u_balance));		
-		responseData.balance.satoshi_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(100000000)); //convert from Bitcoin to Satoshis
-		responseData.balance.satoshi_unc = responseData.balance.bitcoin_unc.times(new BigNumber(100000000));
-		responseData.balance.bitcoin = responseData.balance.bitcoin_cnf.plus(responseData.balance.bitcoin_unc);
-		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.toString();
-		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.toString();
-		responseData.balance.satoshi_cnf = responseData.balance.satoshi_cnf.toString();
-		responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
-		responseData.balance.bitcoin = responseData.balance.bitcoin.toString();
-		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
-		return;
-	}
+	// if ((Date.now() - lastCheckDateObj.valueOf()) < (serverConfig.balanceCheckInterval * 1000)) {
+	// 	trace("waiting for deposit check interval to elapse");
+	// 	//deposit check interval has not elapsed yet
+	// 	if (accountSet) {
+	// 		responseData.craccount = requestData.params.craccount;
+	// 	} else {
+	// 		responseData.address = requestData.params.address;
+	// 	}
+	// 	responseData.type = requestData.params.type;
+	// 	responseData.balance = new Object();
+	// 	/*
+	// 	responseData.balance.bitcoin_cnf = String(queryResult.rows[0].btc_c_balance);
+	// 	responseData.balance.bitcoin_unc = String(queryResult.rows[0].btc_u_balance);		
+	// 	responseData.balance.satoshi_cnf = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_c_balance))); //convert from Bitcoin to Satoshis
+	// 	responseData.balance.satoshi_unc = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_u_balance)));
+	// 	responseData.balance.bitcoin = String(queryResult.rows[0].btc_c_balance + queryResult.rows[0].btc_u_balance);
+	// 	*/
+	// 	responseData.balance.bitcoin_cnf = new BigNumber(String(queryResult.rows[0].btc_c_balance));
+	// 	responseData.balance.bitcoin_unc = new BigNumber(String(queryResult.rows[0].btc_u_balance));		
+	// 	responseData.balance.satoshi_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(100000000)); //convert from Bitcoin to Satoshis
+	// 	responseData.balance.satoshi_unc = responseData.balance.bitcoin_unc.times(new BigNumber(100000000));
+	// 	responseData.balance.bitcoin = responseData.balance.bitcoin_cnf.plus(responseData.balance.bitcoin_unc);
+	// 	responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.toString();
+	// 	responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.toString();
+	// 	responseData.balance.satoshi_cnf = responseData.balance.satoshi_cnf.toString();
+	// 	responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
+	// 	responseData.balance.bitcoin = responseData.balance.bitcoin.toString();
+	// 	replyResult(postData, requestObj, responseObj, batchResponses, responseData);
+	// 	return;
+	// }
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-
-	// trace('final balance' + accountInfo.final_balance);
-	// // payment forwarding ---------------------------------------------------------
-	// keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];	
-	//pushToColdStorage(accountInfo, keyData);
 
 	// ----------------------------------------------------------------------------
 	try {
@@ -229,18 +224,21 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.type = requestData.params.type;
 		responseData.balance = new Object();
 		
-		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.final_balance)); //accountInfo.balance is in Satoshis, as returned by external API
+		responseData.balance.final_balance = new BigNumber(String(accountInfo.final_balance));
+		responseData.balance.final_balance = responseData.balance.final_balance.times(new BigNumber(0.00000001));
+		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); //accountInfo.balance is in Satoshis, as returned by external API
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_unc = new BigNumber(String(accountInfo.unconfirmed_balance));
 		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.times(new BigNumber(0.00000001));
 		responseData.balance.satoshi_cnf = String(accountInfo.balance);
 		responseData.balance.satoshi_unc = String(accountInfo.unconfirmed_balance);
-		responseData.balance.bitcoin = new BigNumber(String(accountInfo.final_balance));
+		responseData.balance.bitcoin = new BigNumber(String(accountInfo.balance));
 		responseData.balance.bitcoin = responseData.balance.bitcoin.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.toString();
 		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.toString();
 		responseData.balance.satoshi_cnf = responseData.balance.satoshi_cnf.toString();
 		responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
+		responseData.balance.final_balance = responseData.balance.final_balance.toString();
 		responseData.balance.bitcoin = responseData.balance.bitcoin.toString();		
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	} catch (err) {
@@ -483,7 +481,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
-			var responseData = new Object();
+			//var responseData = new Object();
 			var amount = new BigNumber(data.final_balance);
 			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
 			trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
