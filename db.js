@@ -83,9 +83,11 @@ exports.query = (queryStr, generator) => {
 			if (err) {
 				console.error(err);
 			} else {
+				console.log('test31')
 				activeConnections.push(connectionInstance);
 				connectionInstance.query(queryStr, function (error, rows, columns) {		
 					var queryResultsObject = new Object();
+					console.log('test32')
 					queryResultsObject.error = error;
 					queryResultsObject.rows = rows;
 					queryResultsObject.columns = columns;
@@ -99,10 +101,12 @@ exports.query = (queryStr, generator) => {
 				});
 			}
 		} catch (err) {
+			console.error(err);
 		} finally {
 			try {
 				connectionInstance.release();
 			} catch (err) {
+				console.error(err);
 			}
 		}
 	});

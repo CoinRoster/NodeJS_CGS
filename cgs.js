@@ -528,7 +528,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 						trace(JSON.stringify(data));
 						
 						responseData.tx = data.tx; 			
-						replyResult(postData, requestObj, responseObj, batchResponses, returnData);
+						replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 						return;
 					}
 				});
