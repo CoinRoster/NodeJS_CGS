@@ -8,6 +8,7 @@ var connection = mysql.createPool({
   password : 'CRDroplet2017!'
 });
  
+var activeConnections = new Array();
 
 /**
 * Attempts to create a new pooled connection to the database using default settings.
@@ -127,7 +128,7 @@ exports.query = (queryStr, generator) => {
 * Closes all pooled connections to the databse (use with caution).
 */
 exports.closeAll = () => {
-	connection.end(function(){
-		console.log ("db.js: All pooled connections closed.");
-	});
+	// connection.end(function(){
+	// 	console.log ("db.js: All pooled connections closed.");
+	// });
 }
