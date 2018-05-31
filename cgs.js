@@ -470,9 +470,9 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		console.log(data);
 		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
-		if(err) {
-			trace("balance check error: " + err)
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
+		if(data.errors != null || data.errors != undefined || data.errors != "") {
+			trace("balance check error: " + data["errors"].error)
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, data["errors"].error);
 			return;
 		}
 
