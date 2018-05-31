@@ -24,6 +24,7 @@ exports.withdrawalAccounts = [
 ]; 
 
 exports.coldStorageAddress = '1M6UzefHf3pTddP4JKGNVCQqMMpND55CXb';
+//test address: morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf
 
 
 //returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
