@@ -80,9 +80,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	insertValues += "\"0\",";
 	insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
 	insertValues += ")";
-	trace('test3');
 	var queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues, generator);	
-	trace('test4');
 	if (queryResult.error != null) {
 		trace ("Database error on RPC_newAccount: "+queryResult.error);		
 		trace ("   Request ID: "+requestData.id);
@@ -91,7 +89,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	}
 	//retrieve miner fee from database, if possible
 	var queryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
-	trace('test5');
+
 	var currentAPI = serverConfig.APIInfo.blockcypher;
 	if (queryResult.error != null) {
 		trace ("Could not retrieve miner fee from database!");
@@ -103,7 +101,6 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
 		trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
 	}
-	trace('test2');
 	responseData.fees = new Object();
 	for (var APIName in serverConfig.APIInfo) {
 		currentAPI = serverConfig.APIInfo[APIName];
@@ -162,10 +159,8 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 	if ((queryResult.rows[0].last_live_balance_check != null) && (queryResult.rows[0].last_live_balance_check != "NULL")) {
-		trace("last date check exists");
 		var lastCheckDateObj = new Date(queryResult.rows[0].last_live_balance_check);	
 	} else {
-		trace("no last date check");
 		lastCheckDateObj = new Date(1970,1,1);	
 	}
 	// if ((Date.now() - lastCheckDateObj.valueOf()) < (serverConfig.balanceCheckInterval * 1000)) {
@@ -467,7 +462,6 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
 
-		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
 		if(err) {
 			trace("balance check error: " + err)
@@ -532,7 +526,6 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 				});
 			});
 		}
-		trace('no balance');
 		responseData.result = "no balance";
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	});

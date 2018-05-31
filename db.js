@@ -83,14 +83,12 @@ exports.query = (queryStr, generator) => {
 			if (err) {
 				console.error(err);
 			} else {
-				console.log('test31')
 				activeConnections.push(connectionInstance);
 				connectionInstance.query(queryStr, function (error, rows, columns) {
 					if (error) {
 						console.log(error);
 					}		
 					var queryResultsObject = new Object();
-					console.log('test32')
 					queryResultsObject.error = error;
 					queryResultsObject.rows = rows;
 					queryResultsObject.columns = columns;
