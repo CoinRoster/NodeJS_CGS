@@ -200,6 +200,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	// }
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
+	trace("balance: " + accountInfo.balance);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
 	trace("balance: " + accountInfo.balance);
 
