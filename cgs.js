@@ -472,7 +472,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		var responseData = new Object();
 		if(data.errors != null || data.errors != undefined || data.errors != "") {
 			trace("balance check error: " + data.errors)
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, data.errors.error);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Could not complete external API call");
 			return;
 		}
 
