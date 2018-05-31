@@ -442,7 +442,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	
 	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network_wrapper, serverConfig.APIInfo.blockcypher.token);
 
 	if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
 		var queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params["address"] + "\"", generator);	
