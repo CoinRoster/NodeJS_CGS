@@ -36,7 +36,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var generator = yield;
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
-	trace('test1');
+	
 	checkParameter(requestData, "type");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
@@ -201,6 +201,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
+	trace("balance: " + accountInfo.balance);
 
 	// ----------------------------------------------------------------------------
 	try {
@@ -477,8 +478,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 		// data = checkBalanceObj(data);
 		trace('live balance check');
-		if(data.final_balance > 0 && data.balance > 0) {
-
+		//if(data.final_balance > 0 && data.balance > 0) {
+		if (data.balance > 0) {
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
 			//var responseData = new Object();
