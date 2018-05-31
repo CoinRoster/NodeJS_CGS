@@ -23,7 +23,7 @@ exports.withdrawalAccounts = [
 	}
 ]; 
 
-exports.coldStorageAddress = 'morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf';
+exports.coldStorageAddress = '1M6UzefHf3pTddP4JKGNVCQqMMpND55CXb';
 
 
 //returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
