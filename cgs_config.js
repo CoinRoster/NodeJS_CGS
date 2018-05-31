@@ -23,9 +23,16 @@ exports.withdrawalAccounts = [
 	}
 ]; 
 
-exports.coldStorageAddress = '1M6UzefHf3pTddP4JKGNVCQqMMpND55CXb';
-//test address: morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf
-
+exports.coldStorageAddresses = [
+	{
+		'type': 'btc',
+		'account': '1M6UzefHf3pTddP4JKGNVCQqMMpND55CXb'
+	},
+	{
+		'type': 'tbtc',
+		'account': 'morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf'
+	}
+];
 
 //returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
 exports.getNextWithdrawalAccount = (accountType) => {
@@ -37,13 +44,23 @@ exports.getNextWithdrawalAccount = (accountType) => {
 	}
 }
 
+//returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
+exports.getColdStorageAddress = (accountType) => {
+	for (var count=0; count < exports.coldStorageAddresses.length; count++) {
+		var currentAccount = exports.coldStorageAddresses[count]
+		if (currentAccount.type == accountType) {
+			return (currentAccount);
+		}
+	}
+}
+
 //external API access information such as tokens
 exports.APIInfo={
 	"blockcypher":
 		{"token":"dea4a0d80c0a4567a758e2f6daa49050",
 		//or "btc/main", "btc/test3"
-		"network":"btc/main",
-		"network_wrapper": "main",
+		"network":"btc/test3",
+		"network_wrapper": "test",
 		//default miner fee in Satoshis (must be a BigNumber!)
 		"minerFee": new BigNumber("10"),
 		"storageMinerFee": new BigNumber("100")}
