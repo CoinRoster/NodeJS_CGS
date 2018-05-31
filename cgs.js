@@ -498,13 +498,13 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			bcapi.newTX(newtx, function(err,data) {
 				if (err) {
 					trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
-					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", err);
 					return;
 				}
 				if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 					trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
 					trace (JSON.stringify(data));
-					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", data["errors"].error);
 					return;
 				}
 				// sign transaction and add public key
