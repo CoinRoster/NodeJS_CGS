@@ -36,7 +36,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var generator = yield;
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
-	trace('test1');
+	
 	checkParameter(requestData, "type");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
@@ -437,7 +437,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	
 	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	var bcapi = new bcypher(requestData.params["type"], 'test3', serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network_wrapper, serverConfig.APIInfo.blockcypher.token);
 
 	if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
 		var queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params["address"] + "\"", generator);	
@@ -462,23 +462,28 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {omitWalletAddresses: true}, function(err, data) {
 
+<<<<<<< HEAD
+=======
+		console.log(data);
+		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
+>>>>>>> origin/master
 		var responseData = new Object();
-		if(err) {
+		if(err) {//(data.errors != null || data.errors != undefined || data.errors != "") {
 			trace("balance check error: " + err)
-			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "An address must be provided in the request.");
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Could not complete external API call");
 			return;
 		}
 
 		// data = checkBalanceObj(data);
 		trace('live balance check');
-		if(data.final_balance > 0 && data.balance > 0) {
-
+		//if(data.final_balance > 0 && data.balance > 0) {
+		if (data.balance > 0) {
 			trace("positive balance in deposit account, pushing to cold storage: " + requestData.params["address"])
 			
 			//var responseData = new Object();
 			var amount = new BigNumber(data.final_balance);
 			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
-			trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
+			trace('miner fee: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
 
 			var newtx = {
 				inputs: [{addresses: [requestData["params"].address]}],
@@ -491,12 +496,13 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			bcapi.newTX(newtx, function(err,data) {
 				if (err) {
 					trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
-					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", err);
+					return;
 				}
 				if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 					trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
 					trace (JSON.stringify(data));
-					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", data["errors"].error);
 					return;
 				}
 				// sign transaction and add public key
@@ -975,11 +981,19 @@ function replyError(postData, requestObj, responseObj, batchResponses, code, mes
 	if (batchResponses != null) {			
 		batchResponses.responses.push(responseData);				
 		if (batchResponses.total == batchResponses.responses.length) {
-			setDefaultHeaders(responseObj);
+			try {
+				setDefaultHeaders(responseObj);
+			} catch (error) {
+				console.log(error);
+			}
 			responseObj.end(JSON.stringify(batchResponses.responses));
 		}
 	} else {
-		setDefaultHeaders(responseObj);
+		try {
+			setDefaultHeaders(responseObj);
+		} catch (error) {
+			console.log(error);
+		}
 		responseObj.end(JSON.stringify(responseData));
 	}	
 }

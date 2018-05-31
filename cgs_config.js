@@ -23,7 +23,8 @@ exports.withdrawalAccounts = [
 	}
 ]; 
 
-exports.coldStorageAddress = 'morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf';
+exports.coldStorageAddress = '1M6UzefHf3pTddP4JKGNVCQqMMpND55CXb';
+//test address: morrjfo2FQqSSopV9YwHZYyJ95BaEdtUAf
 
 
 //returns the next available withdrawal account from 'exports.withdrawalAccounts' based on the account type
@@ -41,10 +42,11 @@ exports.APIInfo={
 	"blockcypher":
 		{"token":"dea4a0d80c0a4567a758e2f6daa49050",
 		//or "btc/main", "btc/test3"
-		"network":"btc/test3",
+		"network":"btc/main",
+		"network_wrapper": "main",
 		//default miner fee in Satoshis (must be a BigNumber!)
 		"minerFee": new BigNumber("10"),
-		"storageMinerFee": new BigNumber("10")}
+		"storageMinerFee": new BigNumber("100")}
 }; 
 
 
