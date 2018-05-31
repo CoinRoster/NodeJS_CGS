@@ -41,7 +41,7 @@ exports.APIInfo={
 	"blockcypher":
 		{"token":"dea4a0d80c0a4567a758e2f6daa49050",
 		//or "btc/main", "btc/test3"
-		"network":"btc/test3",
+		"network":"btc/main",
 		//default miner fee in Satoshis (must be a BigNumber!)
 		"minerFee": new BigNumber("10"),
 		"storageMinerFee": new BigNumber("10")}
