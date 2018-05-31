@@ -984,11 +984,19 @@ function replyError(postData, requestObj, responseObj, batchResponses, code, mes
 	if (batchResponses != null) {			
 		batchResponses.responses.push(responseData);				
 		if (batchResponses.total == batchResponses.responses.length) {
-			setDefaultHeaders(responseObj);
+			try {
+				setDefaultHeaders(responseObj);
+			} catch (error) {
+				console.log(error);
+			}
 			responseObj.end(JSON.stringify(batchResponses.responses));
 		}
 	} else {
-		setDefaultHeaders(responseObj);
+		try {
+			setDefaultHeaders(responseObj);
+		} catch (error) {
+			console.log(error);
+		}
 		responseObj.end(JSON.stringify(responseData));
 	}	
 }
