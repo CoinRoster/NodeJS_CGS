@@ -80,9 +80,8 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	insertValues += "\"0\",";
 	insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
 	insertValues += ")";
-	trace('test3');
 	var queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues, generator);	
-	trace('test4');
+
 	if (queryResult.error != null) {
 		trace ("Database error on RPC_newAccount: "+queryResult.error);		
 		trace ("   Request ID: "+requestData.id);
@@ -91,7 +90,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	}
 	//retrieve miner fee from database, if possible
 	var queryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
-	trace('test5');
+
 	var currentAPI = serverConfig.APIInfo.blockcypher;
 	if (queryResult.error != null) {
 		trace ("Could not retrieve miner fee from database!");
@@ -103,7 +102,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
 		trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
 	}
-	trace('test2');
+
 	responseData.fees = new Object();
 	for (var APIName in serverConfig.APIInfo) {
 		currentAPI = serverConfig.APIInfo[APIName];
