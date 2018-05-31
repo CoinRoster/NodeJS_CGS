@@ -471,7 +471,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
 		if(err) {//(data.errors != null || data.errors != undefined || data.errors != "") {
-			trace("balance check error: " + data.errors)
+			trace("balance check error: " + err)
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Could not complete external API call");
 			return;
 		}
@@ -485,7 +485,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			//var responseData = new Object();
 			var amount = new BigNumber(data.final_balance);
 			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
-			trace('miner fee sanity check: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
+			trace('miner fee: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
 
 			var newtx = {
 				inputs: [{addresses: [requestData["params"].address]}],
