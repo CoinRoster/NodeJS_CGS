@@ -471,7 +471,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
 		if(data.errors != null || data.errors != undefined || data.errors != "") {
-			trace("balance check error: " + data.errors.error)
+			trace("balance check error: " + data.errors)
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, data.errors.error);
 			return;
 		}
