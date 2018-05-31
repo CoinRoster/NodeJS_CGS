@@ -499,6 +499,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 				if (err) {
 					trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
 					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", txSkeleton);
+					return;
 				}
 				if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
 					trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
