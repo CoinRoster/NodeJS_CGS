@@ -26,7 +26,9 @@ var serverConfig = require("./cgs_config.js");
 /**
 * newAccount [RPC/generator]: Generates and registers a new cryptocurrency account via an external service.
 *
-* @param postData The POST data included with the request. No parameters are required for this method.
+* @param postData The POST data included with the request.\
+* 	required: @param type the type of cryptocurrency (currently only btc)
+*			  @param craccount the coinroster username of the account
 * @param requestObj The request object (https://nodejs.org/api/http.html#http_class_http_incomingmessage).
 * @param requestObj The response object (https://nodejs.org/api/http.html#http_class_http_serverresponse).
 * @param batchResponses An object containing expected responses for a batch. If null, this function is not being called as part of a batch. Usually the contents of this
@@ -37,8 +39,9 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
 	
-	// check required parameters, do API call
+	/* -----------------check required parameters, do API call-------------------------- */
 	checkParameter(requestData, "type");
+	checkParameter(requestData, "craccount");
 
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
@@ -58,9 +61,50 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 	responseData.account=serviceResponse.address;
-	trace ("Created new account address: "+responseData.account);
+	trace ("Created new account address: " + responseData.account);
 
-	/* set up database updates to CGS table */
+	/* -----------------check if account exists already in cgs---------------------- */
+	var cgsAccountSet = false;
+	var cgsQueryResult;
+	cgsQueryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `cr_account`=\""+requestData.params.craccount+"\"", generator);	
+
+	if (cgsQueryResult.error != null) {
+		trace ("Database error on rpc_newAccount: "+cgsQueryResult.error);
+		trace ("   Request ID: "+requestData.id);
+		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+		return;
+	}
+	if (cgsQueryResult.rows.length != 0) {
+		cgsAccountSet = true;
+	}
+
+	/* -----------------check if account exists already in address------------------- */
+	var addressAccountSet = false;
+	var addressQueryResult;
+	addressQueryResult = yield db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\""+requestData.params.craccount+"\"", generator);	
+
+	if (addressQueryResult.error != null) {
+		trace ("Database error on rpc_newAccount: "+addressQueryResult.error);
+		trace ("   Request ID: "+requestData.id);
+		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+		return;
+	}
+	if (addressQueryResult.rows.length != 0) {
+		addressAccountSet = true;
+	}
+
+	/* ---------------if already in address table, flip active flag---------------- */
+	if (addressAccountSet) {
+		var updateQueryResult = yield db.query("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\" AND `index`=" + addressQueryResult.rows[0].index, generator)
+		if (updateQueryResult.error != null) {
+			trace ("Database error on rpc_newAccount: " + updateQueryResult.error);
+			trace ("   Request ID: " + requestData.id);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+			return;
+		}
+	}
+
+	/* ---------------package key information------------------------------------- */
 
 	// key info object
 	var newAccountInfo = Object();
@@ -69,40 +113,51 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	newAccountInfo.btc.public = serviceResponse.public;
 	newAccountInfo.btc.wif = serviceResponse.wif;
 
-	trace('craccount' + requestData.params["craccount"]);
-	// update fields
-	var insertFields = "(";
-	if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
-		insertFields += "`cr_account`,";
-	}
-	insertFields += "`btc_address`,";
-	insertFields += "`btc_c_balance`,";
-	insertFields += "`btc_u_balance`,";
-	insertFields += "`keys`";
-	insertFields += ")";
+	/* -------------create cgs record if new, else update address in cgs------------- */
+	var queryResult;
 
-	// update values
-	var insertValues = "("
-	if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
-		insertValues += "\""+requestData.params.craccount+"\","; 
-	}
-	insertValues += "\""+responseData.account+"\","; 
-	insertValues += "\"0\",";
-	insertValues += "\"0\",";
-	insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
-	insertValues += ")";
+	if (!cgsAccountSet) {
+		// update fields
+		var insertFields = "(";
+		if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
+			insertFields += "`cr_account`,";
+		}
+		insertFields += "`btc_address`,";
+		insertFields += "`btc_c_balance`,";
+		insertFields += "`btc_u_balance`,";
+		insertFields += "`keys`";
+		insertFields += ")";
 
-	trace('query: ' + "INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues);
-	// push updates
-	var queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues, generator);	
-	if (queryResult.error != null) {
-		trace ("Database error on RPC_newAccount: "+queryResult.error);		
-		trace ("   Request ID: "+requestData.id);
-		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
-		return;
+		var insertValues = "("
+		if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
+			insertValues += "\""+requestData.params.craccount+"\","; 
+		}
+		insertValues += "\""+responseData.account+"\","; 
+		insertValues += "\"0\",";
+		insertValues += "\"0\",";
+		insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
+		insertValues += ")";
+	
+		trace('query: ' + "INSERT INTO `coinroster`.`cgs` " + insertFields + " VALUES " + insertValues);
+		// push updates
+		queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` " + insertFields+" VALUES " + insertValues, generator);	
+		if (queryResult.error != null) {
+			trace ("Database error on RPC_newAccount: "+queryResult.error);		
+			trace ("   Request ID: "+requestData.id);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
+			return;
+		}
+	} else {
+		var queryResult = yield db.query("UPDATE `coinroster`.`cgs` SET `btc_address`=\"" + responseData.account + "\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\"", generator)
+		if (queryResult.error != null) {
+			trace ("Database error on rpc_newAccount: " + queryResult.error);
+			trace ("   Request ID: " + requestData.id);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+			return;
+		}
 	}
 
-	var updateAddress = yield updateAddressTable(requestData.params["craccount"] , responseData.account, generator);
+	var updateAddress = yield updateAddressTable(requestData.params["craccount"] , responseData.account, newAccountInfo, generator);
 	if (updateAddress === 'success') {
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 		return;
@@ -164,36 +219,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	} else {
 		lastCheckDateObj = new Date(1970,1,1);	
 	}
-	// if ((Date.now() - lastCheckDateObj.valueOf()) < (serverConfig.balanceCheckInterval * 1000)) {
-	// 	trace("waiting for deposit check interval to elapse");
-	// 	//deposit check interval has not elapsed yet
-	// 	if (accountSet) {
-	// 		responseData.craccount = requestData.params.craccount;
-	// 	} else {
-	// 		responseData.address = requestData.params.address;
-	// 	}
-	// 	responseData.type = requestData.params.type;
-	// 	responseData.balance = new Object();
-	// 	/*
-	// 	responseData.balance.bitcoin_cnf = String(queryResult.rows[0].btc_c_balance);
-	// 	responseData.balance.bitcoin_unc = String(queryResult.rows[0].btc_u_balance);		
-	// 	responseData.balance.satoshi_cnf = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_c_balance))); //convert from Bitcoin to Satoshis
-	// 	responseData.balance.satoshi_unc = String(Math.floor(100000000 * Number(queryResult.rows[0].btc_u_balance)));
-	// 	responseData.balance.bitcoin = String(queryResult.rows[0].btc_c_balance + queryResult.rows[0].btc_u_balance);
-	// 	*/
-	// 	responseData.balance.bitcoin_cnf = new BigNumber(String(queryResult.rows[0].btc_c_balance));
-	// 	responseData.balance.bitcoin_unc = new BigNumber(String(queryResult.rows[0].btc_u_balance));		
-	// 	responseData.balance.satoshi_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(100000000)); //convert from Bitcoin to Satoshis
-	// 	responseData.balance.satoshi_unc = responseData.balance.bitcoin_unc.times(new BigNumber(100000000));
-	// 	responseData.balance.bitcoin = responseData.balance.bitcoin_cnf.plus(responseData.balance.bitcoin_unc);
-	// 	responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.toString();
-	// 	responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.toString();
-	// 	responseData.balance.satoshi_cnf = responseData.balance.satoshi_cnf.toString();
-	// 	responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
-	// 	responseData.balance.bitcoin = responseData.balance.bitcoin.toString();
-	// 	replyResult(postData, requestObj, responseObj, batchResponses, responseData);
-	// 	return;
-	// }
+
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
@@ -545,7 +571,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 /**
  * 
  */
-function updateAddressTable (craccount, btc_address, generator) {
+function updateAddressTable (craccount, btc_address, keys, generator) {
 
 	// TODO: check if craccount already exists
 
@@ -554,13 +580,15 @@ function updateAddressTable (craccount, btc_address, generator) {
 	// update fields
 	var insertFields = "(";
 	insertFields += "`btc_address`,";
-	insertFields += "`cr_account`";
+	insertFields += "`cr_account`,";
+	insertFields += "`keys`";
 	insertFields += ")";
 
 	// update values
 	var insertValues = "(";
 	insertValues += "\""+ btc_address +"\","; 
-	insertValues += "\""+ craccount +"\"";
+	insertValues += "\""+ craccount +"\",";
+	insertValues += "\""+ JSON.stringify(keys) +"\"";
 	insertValues += ")";
 
 	// push updates
