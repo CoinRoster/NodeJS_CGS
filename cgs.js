@@ -576,7 +576,7 @@ function updateAddressTable (craccount, btc_address, generator) {
 	// update values
 	var insertValues = "(";
 	insertValues += "\""+ btc_address +"\","; 
-	insertValues += "\""+ craccount +"\",";
+	insertValues += "\""+ craccount +"\"";
 	insertValues += ")";
 
 	// push updates
