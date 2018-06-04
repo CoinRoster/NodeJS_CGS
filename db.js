@@ -18,7 +18,8 @@ var activeConnections = new Array();
 */
 exports.connect = (onConnect, onFail) => {
 	connection.getConnection(function(err, connectionInstance) {
-	  if (err) {		
+	  if (err) {	
+		console.log('db connection error' + err);	
 		onFail(connectionInstance);
 		return;
 	  }
