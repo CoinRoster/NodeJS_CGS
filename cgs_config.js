@@ -63,7 +63,7 @@ exports.APIInfo={
 		"network_wrapper": "test",
 		//default miner fee in Satoshis (must be a BigNumber!)
 		"minerFee": new BigNumber("10"),
-		"storageMinerFee": new BigNumber("100")}
+		"storageMinerFee": new BigNumber("1000")}
 }; 
 
 

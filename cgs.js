@@ -37,6 +37,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
 	
+	// check required parameters, do API call
 	checkParameter(requestData, "type");
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
@@ -57,11 +58,17 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	}
 	responseData.account=serviceResponse.address;
 	trace ("Created new account address: "+responseData.account);
+
+	/* set up database updates to CGS table */
+
+	// key info object
 	var newAccountInfo = Object();
 	newAccountInfo.btc = new Object();
 	newAccountInfo.btc.private = serviceResponse.private;
 	newAccountInfo.btc.public = serviceResponse.public;
 	newAccountInfo.btc.wif = serviceResponse.wif;
+
+	// update fields
 	var insertFields = "(";
 	if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
 		insertFields += "`cr_account`,";
@@ -71,6 +78,8 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	insertFields += "`btc_u_balance`,";
 	insertFields += "`keys`";
 	insertFields += ")";
+
+	// update values
 	var insertValues = "("
 	if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
 		insertValues += "\""+requestData.params.craccount+"\","; 
@@ -80,6 +89,8 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	insertValues += "\"0\",";
 	insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
 	insertValues += ")";
+
+	// push updates
 	var queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues, generator);	
 	if (queryResult.error != null) {
 		trace ("Database error on RPC_newAccount: "+queryResult.error);		
@@ -87,28 +98,34 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
 		return;
 	}
-	//retrieve miner fee from database, if possible
-	var queryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
 
-	var currentAPI = serverConfig.APIInfo.blockcypher;
-	if (queryResult.error != null) {
-		trace ("Could not retrieve miner fee from database!");
-		trace (JSON.stringify(queryResult.error));
-	}
-	if (queryResult.rows.length == 0) {
-		trace ("Miner fee could not be found in database!");
+	var updateAddressTable = yield updateAddressTable(requestData.params.craccount, responseData.account, generator);
+	if (updateAddressTable === 'success') {
+		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
 	} else {
-		currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
-		trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
+		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	}
-	responseData.fees = new Object();
-	for (var APIName in serverConfig.APIInfo) {
-		currentAPI = serverConfig.APIInfo[APIName];
-		var satoshiPerBTC = new BigNumber("100000000");
-		responseData.fees.bitcoin = currentAPI.minerFee.dividedBy(satoshiPerBTC).toString();
-		responseData.fees.satoshis = currentAPI.minerFee.toString();		
-	}
-	replyResult(postData, requestObj, responseObj, batchResponses, responseData);
+	// //retrieve miner fee from database, if possible
+	// var queryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
+
+	// var currentAPI = serverConfig.APIInfo.blockcypher;
+	// if (queryResult.error != null) {
+	// 	trace ("Could not retrieve miner fee from database!");
+	// 	trace (JSON.stringify(queryResult.error));
+	// }
+	// if (queryResult.rows.length == 0) {
+	// 	trace ("Miner fee could not be found in database!");
+	// } else {
+	// 	currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
+	// 	trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
+	// }
+	// responseData.fees = new Object();
+	// for (var APIName in serverConfig.APIInfo) {
+	// 	currentAPI = serverConfig.APIInfo[APIName];
+	// 	var satoshiPerBTC = new BigNumber("100000000");
+	// 	responseData.fees.bitcoin = currentAPI.minerFee.dividedBy(satoshiPerBTC).toString();
+	// 	responseData.fees.satoshis = currentAPI.minerFee.toString();		
+	// }
 }
 
 
@@ -541,7 +558,40 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 //*************************** UTILITY FUNCTIONS *************************************
 
-// TODO: function getCGSValue(requestData) 
+/**
+ * 
+ */
+function updateAddressTable (craccount, btc_address, generator) {
+
+	// TODO: check if craccount already exists
+	
+	/* set up database updates to CGS table */
+
+	// update fields
+	var insertFields = "(";
+	insertFields += "`btc_address`,";
+	insertFields += "`cr_account`,";
+	insertFields += ")";
+
+	// update values
+	var insertValues = "(";
+	insertValues += "\""+responseData.account+"\","; 
+	insertValues += "\""+requestData.params.craccount+"\",";
+	insertValues += ")";
+
+	// push updates
+	var queryResult = yield db.query("INSERT INTO `coinroster`.`address` "+insertFields+" VALUES "+insertValues, generator);	
+	if (queryResult.error != null) {
+		// trace ("Database error on RPC_newAccount: "+queryResult.error);		
+		// trace ("   Request ID: "+requestData.id);
+		// replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
+		// return;
+		generator.next(queryResult.error);
+	} else {
+		generator.next("success");
+	}
+
+}
 
 /**
 * Checks a Bitcoin account balance via an external API request.
