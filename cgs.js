@@ -92,6 +92,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
 	insertValues += ")";
 
+	trace('query: ' + "INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues);
 	// push updates
 	var queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` "+insertFields+" VALUES "+insertValues, generator);	
 	if (queryResult.error != null) {
