@@ -102,30 +102,11 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	var updateAddress = yield updateAddressTable(requestData.params.craccount, responseData.account, generator);
 	if (updateAddress === 'success') {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
+		return;
 	} else {
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
+		return;
 	}
-	// //retrieve miner fee from database, if possible
-	// var queryResult = yield db.query("SELECT VALUE FROM `coinroster`.`control` WHERE NAME='miner_fee'", generator);	
-
-	// var currentAPI = serverConfig.APIInfo.blockcypher;
-	// if (queryResult.error != null) {
-	// 	trace ("Could not retrieve miner fee from database!");
-	// 	trace (JSON.stringify(queryResult.error));
-	// }
-	// if (queryResult.rows.length == 0) {
-	// 	trace ("Miner fee could not be found in database!");
-	// } else {
-	// 	currentAPI.minerFee = new BigNumber(String(queryResult.rows[0].VALUE));
-	// 	trace ("Miner fee retrieved from database: "+currentAPI.minerFee.toString());
-	// }
-	// responseData.fees = new Object();
-	// for (var APIName in serverConfig.APIInfo) {
-	// 	currentAPI = serverConfig.APIInfo[APIName];
-	// 	var satoshiPerBTC = new BigNumber("100000000");
-	// 	responseData.fees.bitcoin = currentAPI.minerFee.dividedBy(satoshiPerBTC).toString();
-	// 	responseData.fees.satoshis = currentAPI.minerFee.toString();		
-	// }
 }
 
 
