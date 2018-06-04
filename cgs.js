@@ -39,6 +39,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	
 	// check required parameters, do API call
 	checkParameter(requestData, "type");
+
 	if (requestData.params.type != "btc") {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_INVALID_PARAMS_ERROR, "The cryptocurrency type \""+requestData.params.type+"\" is not supported for this operation.");
 		return;
@@ -68,6 +69,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	newAccountInfo.btc.public = serviceResponse.public;
 	newAccountInfo.btc.wif = serviceResponse.wif;
 
+	trace('craccount' + requestData.params["craccount"]);
 	// update fields
 	var insertFields = "(";
 	if ((requestData.params["craccount"] != null) && (requestData.params["craccount"] != undefined) && (requestData.params["craccount"] != "")) {
@@ -99,7 +101,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 
-	var updateAddress = yield updateAddressTable(requestData.params.craccount, responseData.account, generator);
+	var updateAddress = yield updateAddressTable(requestData.params["craccount"] , responseData.account, generator);
 	if (updateAddress === 'success') {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
 		return;
@@ -551,7 +553,7 @@ function updateAddressTable (craccount, btc_address, generator) {
 	// update fields
 	var insertFields = "(";
 	insertFields += "`btc_address`,";
-	insertFields += "`cr_account`,";
+	insertFields += "`cr_account`";
 	insertFields += ")";
 
 	// update values
