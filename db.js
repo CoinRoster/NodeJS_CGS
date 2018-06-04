@@ -5,7 +5,7 @@ var mysql      = require('mysql');
 var connection = mysql.createPool({
   host     : 'localhost',
   user     : 'coinrostersql',
-  password : 'crsqlpass'
+  password : 'CRDroplet2017!'
 });
  
 var activeConnections = new Array();
