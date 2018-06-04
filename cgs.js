@@ -564,7 +564,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 function updateAddressTable (craccount, btc_address, generator) {
 
 	// TODO: check if craccount already exists
-	
+
 	/* set up database updates to CGS table */
 
 	// update fields
@@ -580,17 +580,13 @@ function updateAddressTable (craccount, btc_address, generator) {
 	insertValues += ")";
 
 	// push updates
-	var queryResult = yield db.query("INSERT INTO `coinroster`.`address` "+insertFields+" VALUES "+insertValues, generator);	
-	if (queryResult.error != null) {
-		// trace ("Database error on RPC_newAccount: "+queryResult.error);		
-		// trace ("   Request ID: "+requestData.id);
-		// replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
-		// return;
-		generator.next(queryResult.error);
-	} else {
-		generator.next("success");
-	}
-
+	var queryResult = db.query("INSERT INTO `coinroster`.`address` "+insertFields+" VALUES "+insertValues, (data) => {
+		if (data.error != null) {
+			generator.next(data.error);
+		} else {
+			generator.next("success");
+		}
+	});	
 }
 
 /**
