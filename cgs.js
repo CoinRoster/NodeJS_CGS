@@ -104,6 +104,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 
 	var updateAddress = yield updateAddressTable(requestData.params["craccount"] , responseData.account, generator);
 	if (updateAddress === 'success') {
+		trace("y");
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
 		return;
 	} else {
