@@ -95,6 +95,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 
 	/* ---------------if already in address table, flip active flag---------------- */
 	if (addressAccountSet) {
+		trace("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\" AND `index`=" + addressQueryResult.rows[0].index);
 		var updateQueryResult = yield db.query("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\" AND `index`=" + addressQueryResult.rows[0].index, generator)
 		if (updateQueryResult.error != null) {
 			trace ("Database error on rpc_newAccount: " + updateQueryResult.error);
