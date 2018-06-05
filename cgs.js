@@ -588,7 +588,7 @@ function updateAddressTable (craccount, btc_address, keys, generator) {
 	var insertValues = "(";
 	insertValues += "\""+ btc_address +"\","; 
 	insertValues += "\""+ craccount +"\",";
-	insertValues += "\""+ JSON.stringify(keys) +"\"";
+	insertValues += "\'"+ JSON.stringify(keys) +"\'";
 	insertValues += ")";
 
 	trace("address query: " + "INSERT INTO `coinroster`.`address` " + insertFields+" VALUES " + insertValues);
