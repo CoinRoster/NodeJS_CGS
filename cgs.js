@@ -81,18 +81,21 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	/* -----------------check if account exists already in address------------------- */
 	var addressAccountSet = false;
 	var addressQueryResult;
-	addressQueryResult = yield db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\""+requestData.params.craccount+"\"", generator);	
+	// account can only exist in address if it exists in cgs
+	if(cgsAccountSet) {
+		addressQueryResult = yield db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + requestData.params.craccount + "\" AND `btc_address`=\"" + cgsQueryResult.rows[0].btc_address, generator);	
 
-	if (addressQueryResult.error != null) {
-		trace ("Database error on rpc_newAccount: "+addressQueryResult.error);
-		trace ("   Request ID: "+requestData.id);
-		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
-		return;
+		if (addressQueryResult.error != null) {
+			trace ("Database error on rpc_newAccount: "+addressQueryResult.error);
+			trace ("   Request ID: "+requestData.id);
+			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "The database returned an error.");
+			return;
+		}
+		if (addressQueryResult.rows.length != 0) {
+			addressAccountSet = true;
+		}
 	}
-	if (addressQueryResult.rows.length != 0) {
-		addressAccountSet = true;
-	}
-
+	
 	/* ---------------if already in address table, flip active flag---------------- */
 	if (addressAccountSet) {
 		trace("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\" AND `index`=" + addressQueryResult.rows[0].index);
