@@ -462,8 +462,6 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	checkParameter(requestData, "address");
 	checkParameter(requestData, "type");
 	
-	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
-	
 	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 
 	if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
@@ -486,6 +484,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		return;
 	}
 
+	trace(JSON.stringify(bcapi));
+	trace(bcapi);
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {}, function(err, data) {
 
@@ -573,7 +573,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
  * 
  */
 function checkPaymentForward (craccount) {
-	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + requestData.params.craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
+	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
 		trace(data);
 	});
 }
