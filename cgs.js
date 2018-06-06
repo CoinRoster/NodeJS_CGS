@@ -640,7 +640,8 @@ function checkAccountBalance(generator, account) {
 * 
 * @param generator The generator function invoking this method and expecting the resulting data.
 */
-function getNewAccountAddress(generator) {			
+function getNewAccountAddress(generator) {
+	trace( "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs");			
 	request({			  
 		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs",
 		method: "POST",
