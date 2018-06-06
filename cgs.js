@@ -494,7 +494,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	}
 
 	// get balance of sender address
-	bcapi.getAddrBal(requestData.params["address"], function(err, data) {
+	bcapi.getAddrBal(requestData.params["address"], {}, function(err, data) {
 
 		console.log(data);
 		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
