@@ -640,10 +640,10 @@ function checkAccountBalance(generator, account) {
 * 
 * @param generator The generator function invoking this method and expecting the resulting data.
 */
-function getNewAccountAddress(generator) {
-	trace( "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs");			
+function getNewAccountAddress(generator, type) {
+	var netwk = type || "btc";			
 	request({			  
-		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs",
+		url: "https://api.blockcypher.com/v1/"+netwk+'/'+serverConfig.APIInfo.blockcypher.network+"/addrs",
 		method: "POST",
 		json: true    
 	}, function (error, response, body){   
@@ -847,9 +847,10 @@ function deriveAddress(rootAddressXPRV, index, derivePath) {
 * @param toAddr The receiving address.
 * @param sathoshis The number of satoshis to send in the transaction.
 */
-function getTxSkeleton (fromAddr, toAddr, sathoshis, generator) {
+function getTxSkeleton (fromAddr, toAddr, sathoshis, generator, type) {
+	var netwk = type || "btc";		
 	request({
-		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/txs/new?token="+serverConfig.APIInfo.blockcypher.token,
+		url: "https://api.blockcypher.com/v1/"+netwk+'/'+serverConfig.APIInfo.blockcypher.network+"/txs/new?token="+serverConfig.APIInfo.blockcypher.token,
 		method: "POST",
 		body:{"inputs":[{"addresses":[fromAddr]}], "outputs":[{"addresses":[toAddr], "value": Number(sathoshis)}], "fees":Number(serverConfig.APIInfo.blockcypher.minerFee.toString())},
 		json: true  
@@ -872,7 +873,7 @@ function getTxSkeleton (fromAddr, toAddr, sathoshis, generator) {
 * @return The signed skeleton transaction object that may now be sent to the network.
 */
 function signTxSkeleton (txObject, signingWIF) {
-	if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
+	if (serverConfig.APIInfo.blockcypher.network == "test3") {
 		//testnet
 		var key = new bitcoin.ECPair.fromWIF(signingWIF, bitcoin.networks.testnet);
 	} else {
@@ -896,9 +897,10 @@ function signTxSkeleton (txObject, signingWIF) {
 * @param generator The generator function to call when the asynchronous operation has completed.
 * @param txObject The transaction to send.
 */
-function sendTransaction(txObject, generator) {
+function sendTransaction(txObject, generator, type) {
+	var netwk = type || "btc";		
 	request({
-		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/txs/send?token="+serverConfig.APIInfo.blockcypher.token,
+		url: "https://api.blockcypher.com/v1/"+ntwk+'/'+serverConfig.APIInfo.blockcypher.network+"/txs/send?token="+serverConfig.APIInfo.blockcypher.token,
 		method: "POST",
 		body: txObject,
 		json: true    
