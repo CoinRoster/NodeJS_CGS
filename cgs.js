@@ -107,6 +107,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		}
 	}
 
+	checkPaymentForward(requestData.params["craccount"]);
 	/* ---------------package key information------------------------------------- */
 
 	// key info object
