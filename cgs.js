@@ -226,10 +226,9 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	trace('accountInfo: ' + JSON.stringify(accountInfo));
 	// ----------------------------------------------------------------------------
 	try {
-		var btc_balance_confirmed = new BigNumber(String(accountInfo.final_balance));
+		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
 		btc_balance_confirmed = btc_balance_confirmed.times(new BigNumber(0.00000001)); //convert from Satoshis to Bitcoin
 		var btc_balance_unconfirmed = new BigNumber(String(accountInfo.unconfirmed_balance));
 		btc_balance_unconfirmed = btc_balance_unconfirmed.times(new BigNumber(0.00000001));
@@ -249,8 +248,6 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.type = requestData.params.type;
 		responseData.balance = new Object();
 		
-		responseData.balance.final_balance = new BigNumber(String(accountInfo.final_balance));
-		responseData.balance.final_balance = responseData.balance.final_balance.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_cnf = new BigNumber(String(accountInfo.balance)); //accountInfo.balance is in Satoshis, as returned by external API
 		responseData.balance.bitcoin_cnf = responseData.balance.bitcoin_cnf.times(new BigNumber(0.00000001));
 		responseData.balance.bitcoin_unc = new BigNumber(String(accountInfo.unconfirmed_balance));
@@ -263,9 +260,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.balance.bitcoin_unc = responseData.balance.bitcoin_unc.toString();
 		responseData.balance.satoshi_cnf = responseData.balance.satoshi_cnf.toString();
 		responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
-		responseData.balance.final_balance = responseData.balance.final_balance.toString();
 		responseData.balance.bitcoin = responseData.balance.bitcoin.toString();		
-		trace('responseData: ' + JSON.stringify(responseData));
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	} catch (err) {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Balance for address or account could not be determined.");
