@@ -621,9 +621,10 @@ function updateAddressTable (craccount, btc_address, keys, generator) {
 * @param generator The generator function to return the API result to.
 * @param account The Bitcoin account to check a balance for.
 */
-function checkAccountBalance(generator, account) {
+function checkAccountBalance(generator, account, type) {
+	var netwk = type || 'btc';
 	request({
-		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs/"+account+"/full",
+		url: "https://api.blockcypher.com/v1/"+netwk+'/'+serverConfig.APIInfo.blockcypher.network+"/addrs/"+account+"/full",
 		method: "GET",
 		json: true		
 	}, function (err, response, body){ 
