@@ -265,6 +265,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 		responseData.balance.satoshi_unc = responseData.balance.satoshi_unc.toString();
 		responseData.balance.final_balance = responseData.balance.final_balance.toString();
 		responseData.balance.bitcoin = responseData.balance.bitcoin.toString();		
+		trace('responseData: ' + JSON.stringify(responseData));
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 	} catch (err) {
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Balance for address or account could not be determined.");
