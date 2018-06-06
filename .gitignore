@@ -1,2 +1,5 @@
 *.log
 node_modules
+.vscode
+npm-debug.log.1130816483 npm-debug.log.2252483592 npm-debug.log.3106671561 npm-debug.log.952939089
+npm-debug.log.1130816483 npm-debug.log.2252483592 npm-debug.log.3106671561 npm-debug.log.952939089
