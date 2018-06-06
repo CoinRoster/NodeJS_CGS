@@ -491,7 +491,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		trace(data);
 		trace('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
-		if(err) {//(data.errors != null || data.errors != undefined || data.errors != "") {
+		if(err) {
 			trace("balance check error: " + err);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Could not complete external API call");
 			return;
@@ -573,7 +573,10 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
  */
 function checkPaymentForward (craccount) {
 	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
-		trace(JSON.stringify(data.rows[0]));
+		//trace(JSON.stringify(data.rows[0]));
+		for(i = 0; i < data.rows.length; i++) {
+			console.log(Number(i + 1) + ": " + data.rows[i].btc_address + '\n');
+		}
 	});
 }
 
