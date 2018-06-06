@@ -75,6 +75,7 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 	if (cgsQueryResult.rows.length != 0) {
+		trace('CGS ENTRY: ' + JSON.stringify(cgsQueryResult));
 		cgsAccountSet = true;
 	}
 
