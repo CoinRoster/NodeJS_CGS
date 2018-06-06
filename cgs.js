@@ -484,16 +484,15 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		return;
 	}
 
-	trace(JSON.stringify(bcapi));
-	trace(bcapi);
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {}, function(err, data) {
 
-		console.log(data);
-		console.log('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
+		trace('err: ' + err);
+		trace(data);
+		trace('The wallet contains:' +  data.final_balance + ' satoshi (' + data.final_balance * 0.00000001 + 'BTC)');
 		var responseData = new Object();
 		if(err) {//(data.errors != null || data.errors != undefined || data.errors != "") {
-			trace("balance check error: " + err)
+			trace("balance check error: " + err);
 			replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "Could not complete external API call");
 			return;
 		}
@@ -574,7 +573,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
  */
 function checkPaymentForward (craccount) {
 	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
-		trace(data);
+		trace(JSON.stringify(data));
 	});
 }
 
@@ -728,7 +727,7 @@ function transactionExists (txArray, txhash) {
 * @param generator The generator function to invoke when thhe asynchronous operations has completed.
 * @param btc_account The Bitcoin account address for which to retrieve inputs.
 */
-function getIncomingTransactionsForAccount(generator, btc_account) {
+function getIncomingTransactionsForAccount(btc_account, generator) {
 	request({
 		url: "https://api.blockcypher.com/v1/"+serverConfig.APIInfo.blockcypher.network+"/addrs/"+btc_account+"/full?limit=50&txlimit=10000",
 		method: "GET",
