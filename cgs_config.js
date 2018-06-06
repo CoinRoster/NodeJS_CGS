@@ -3,6 +3,7 @@ const BigNumber = require('bignumber.js');
 
 // *** Cryptocurrency Gateway Services Server Configuration ***
 
+bcypher_network = "test3"; // one of "test3" or "main"
 exports.balanceCheckInterval = 0; //the number of seconds required to elapse between successive external balance update API calls
 
 //accounts used when withdrawals that exceed original deposit amounts
@@ -59,8 +60,7 @@ exports.APIInfo={
 	"blockcypher":
 		{"token":"dea4a0d80c0a4567a758e2f6daa49050",
 		//or "btc/main", "btc/test3"
-		"network":"btc/test3",
-		"network_wrapper": "test",
+		"network":"btc/" + bcypher_network,
 		//default miner fee in Satoshis (must be a BigNumber!)
 		"minerFee": new BigNumber("10"),
 		"storageMinerFee": new BigNumber("1000")}

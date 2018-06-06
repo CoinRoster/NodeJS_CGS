@@ -463,7 +463,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 	
 	//var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 	
-	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network_wrapper, serverConfig.APIInfo.blockcypher.token);
+	var bcapi = new bcypher(requestData.params["type"], serverConfig.APIInfo.blockcypher.network, serverConfig.APIInfo.blockcypher.token);
 
 	if ((requestData.params["address"] != undefined) && (requestData.params["address"] != null) && (requestData.params["address"] != "")) {
 		var queryResult = yield db.query("SELECT * FROM `coinroster`.`cgs` WHERE `btc_address`=\"" + requestData.params["address"] + "\"", generator);	
@@ -567,12 +567,24 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 //*************************** UTILITY FUNCTIONS *************************************
 
-/**
+/** 
+ * 
  * 
  */
-function updateAddressTable (craccount, btc_address, keys, generator) {
+function checkPaymentForward (craccount) {
+	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + requestData.params.craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
+		trace(data);
+	});
+}
 
-	// TODO: check if craccount already exists
+/**
+ * Updates address table with new row containing address information
+ * 
+ * @param craccount the coinroster username
+ * @param btc_address the new btc address to be added
+ * @param generator callback/generator to return sucess
+ */
+function updateAddressTable (craccount, btc_address, keys, generator) {
 
 	/* set up database updates to CGS table */
 
@@ -590,7 +602,6 @@ function updateAddressTable (craccount, btc_address, keys, generator) {
 	insertValues += "\'"+ JSON.stringify(keys) +"\'";
 	insertValues += ")";
 
-	trace("address query: " + "INSERT INTO `coinroster`.`address` " + insertFields+" VALUES " + insertValues);
 	// push updates
 	var queryResult = db.query("INSERT INTO `coinroster`.`address` " + insertFields+" VALUES " + insertValues, (data) => {
 		if (data.error != null) {
