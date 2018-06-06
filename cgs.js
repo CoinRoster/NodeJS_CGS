@@ -573,7 +573,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
  */
 function checkPaymentForward (craccount) {
 	db.query("SELECT * FROM `coinroster`.`address` WHERE `cr_account`=\"" + craccount + "\" AND `forwarded_to_storage`=\"0\"", (data) =>{
-		trace(JSON.stringify(data));
+		trace(JSON.stringify(data.rows[0]));
 	});
 }
 
