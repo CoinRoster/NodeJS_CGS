@@ -75,7 +75,6 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		return;
 	}
 	if (cgsQueryResult.rows.length != 0) {
-		trace('CGS ENTRY: ' + JSON.stringify(cgsQueryResult));
 		cgsAccountSet = true;
 	}
 
@@ -99,7 +98,6 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 	
 	/* ---------------if already in address table, flip active flag---------------- */
 	if (addressAccountSet) {
-		trace("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["cr_account"] +"\" AND `index`=" + addressQueryResult.rows[0].index);
 		var updateQueryResult = yield db.query("UPDATE `coinroster`.`address` SET `active`=\"0\" WHERE `cr_account`=\"" + requestData.params["craccount"] +"\" AND `index`=\"" + addressQueryResult.rows[0].index + "\"", generator)
 		if (updateQueryResult.error != null) {
 			trace ("Database error on rpc_newAccount: " + updateQueryResult.error);
@@ -143,7 +141,6 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		insertValues += "'"+JSON.stringify(newAccountInfo)+"'";
 		insertValues += ")";
 	
-		trace('query: ' + "INSERT INTO `coinroster`.`cgs` " + insertFields + " VALUES " + insertValues);
 		// push updates
 		queryResult = yield db.query("INSERT INTO `coinroster`.`cgs` " + insertFields+" VALUES " + insertValues, generator);	
 		if (queryResult.error != null) {
@@ -164,11 +161,9 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 
 	var updateAddress = yield updateAddressTable(requestData.params["craccount"] , responseData.account, newAccountInfo, generator);
 	if (updateAddress === 'success') {
-		trace("HERE" + responseData);
 		replyResult(postData, requestObj, responseObj, batchResponses, responseData);
 		return;
 	} else {
-		trace("NOT HERE");
 		replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_SQL_ERROR, "There was an error creating a new account address.");
 		return;
 	}
@@ -193,6 +188,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	var requestData = JSON.parse(postData);
 	var responseData = new Object();
 	
+	/* Check parameters, query details from db */
 	// check request data for required params
 	checkParameter(requestData, "type");
 	if (requestData.params.type != "btc") {
@@ -230,7 +226,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-
+	trace('accountInfo: ' + JSON.stringify(accountInfo));
 	// ----------------------------------------------------------------------------
 	try {
 		var btc_balance_confirmed = new BigNumber(String(accountInfo.final_balance));
