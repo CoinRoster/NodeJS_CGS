@@ -484,7 +484,6 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		return;
 	}
 
-	trace('address: ' + requestData.params["address"]);
 
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {}, function(err, data) {
@@ -511,9 +510,9 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			trace('miner fee: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
 
 			if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
-				var coldStorageAddress = serverConfig.getColdStorageAddress("tbtc");
+				var coldStorageAddress = serverConfig.getColdStorageAddress("tbtc").account;
 			} else {
-				coldStorageAddress = serverConfig.getColdStorageAddress("btc");
+				coldStorageAddress = serverConfig.getColdStorageAddress("btc").account;
 			}	
 			var newtx = {
 				inputs: [{addresses: [requestData["params"].address]}],
