@@ -159,8 +159,9 @@ function* RPC_newAccount (postData, requestObj, responseObj, batchResponses) {
 		var insertValues = "(";
 		insertValues += "\"" + responseData.account + "\",";
 		insertValues += "'" + JSON.stringify(newAccountInfo) + "'";
-		insertFields += ")";
-
+		insertValues += ")";
+		
+		trace("UPDATE `coinroster`.`cgs` " + insertFields + " VALUES " + insertValues + " WHERE `cr_account`=\"" + requestData.params["craccount"] +"\"");
 		var queryResult = yield db.query("UPDATE `coinroster`.`cgs` " + insertFields + " VALUES " + insertValues + "\" WHERE `cr_account`=\"" + requestData.params["craccount"] +"\"", generator)
 		if (queryResult.error != null) {
 			trace ("Database error on rpc_newAccount: " + queryResult.error);
