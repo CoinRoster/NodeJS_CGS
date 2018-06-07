@@ -524,7 +524,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 
 			var keyData = JSON.parse(queryResult.rows[0].keys)[requestData.params.type];
 			var keys = new bitcoin.ECPair(bigi.fromHex(keyData.private));
-			trace(JSON.stringify(keys));
+			trace(JSON.stringify(keyData));
 			bcapi.newTX(newtx, function(err,data) {
 				console.log(data);
 				if (err) {
