@@ -226,9 +226,7 @@ function* RPC_getBalance(postData, requestObj, responseObj, batchResponses) {
 
 	trace ("Performing live blockchain balance check...");
 	var accountInfo=yield checkAccountBalance(generator, queryResult.rows[0].btc_address);
-	trace('accountInfo1: ' + JSON.stringify(accountInfo));
 	accountInfo = checkBalanceObj(accountInfo); //check for duplicate transactions
-	trace('accountInfo2: ' + JSON.stringify(accountInfo));
 	// ----------------------------------------------------------------------------
 	try {
 		var btc_balance_confirmed = new BigNumber(String(accountInfo.balance));
