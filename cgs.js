@@ -509,7 +509,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			amount = amount.minus(serverConfig.APIInfo.blockcypher.storageMinerFee);
 			trace('miner fee: ' + serverConfig.APIInfo.blockcypher.storageMinerFee);
 
-			if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
+			if (serverConfig.APIInfo.blockcypher.network == "test3") {
 				var coldStorageAddress = serverConfig.getColdStorageAddress("tbtc").account;
 			} else {
 				coldStorageAddress = serverConfig.getColdStorageAddress("btc").account;
