@@ -484,6 +484,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 		return;
 	}
 
+	trace('address: ' + requestData.params["address"]);
+
 	// get balance of sender address
 	bcapi.getAddrBal(requestData.params["address"], {}, function(err, data) {
 
@@ -528,7 +530,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", err);
 					return;
 				}
-				if ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != "")) {
+				if (((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != ""))
+					  || ((data["error"] != null) && (data["error"] != undefined) && (data["error"] != ""))) {
 					trace ("      Error creating transaction skeleton: \n"+ JSON.stringify(data.errors));
 					trace (JSON.stringify(data));
 					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", data["errors"].error);
