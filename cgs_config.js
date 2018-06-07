@@ -3,7 +3,7 @@ const BigNumber = require('bignumber.js');
 
 // *** Cryptocurrency Gateway Services Server Configuration ***
 
-bcypher_network = "main"; // one of "test3" or "main"
+bcypher_network = "test3"; // one of "test3" or "main"
 exports.balanceCheckInterval = 0; //the number of seconds required to elapse between successive external balance update API calls
 
 //accounts used when withdrawals that exceed original deposit amounts
