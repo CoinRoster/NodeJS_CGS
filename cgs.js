@@ -561,8 +561,8 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 				bcapi.sendTX(data, (err, data) => {
 					if (err !== null || ((data["errors"] != null) && (data["errors"] != undefined) && (data["errors"] != ""))) {
 						var error = data["errors"].error;
-						trace("error posting the transaction: " + data);
-						replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", data);
+						trace("error posting the transaction: " + JSON.stringify(data));
+						replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", JSON.stringify(data));
 						return;
 					} else {
 						trace("the deposited amount was successfully forwarded to cold storage:");
