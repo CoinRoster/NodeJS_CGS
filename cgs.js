@@ -904,7 +904,7 @@ function signTxSkeleton (txObject, signingWIF) {
 function sendTransaction(txObject, generator, type) {
 	var netwk = type || "btc";		
 	request({
-		url: "https://api.blockcypher.com/v1/"+ntwk+'/'+serverConfig.APIInfo.blockcypher.network+"/txs/send?token="+serverConfig.APIInfo.blockcypher.token,
+		url: "https://api.blockcypher.com/v1/"+netwk+'/'+serverConfig.APIInfo.blockcypher.network+"/txs/send?token="+serverConfig.APIInfo.blockcypher.token,
 		method: "POST",
 		body: txObject,
 		json: true    
