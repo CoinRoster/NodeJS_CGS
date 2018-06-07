@@ -392,7 +392,7 @@ function* RPC_sendTransaction (postData, requestObj, responseObj, batchResponses
 
 	// cash register payment ---------------------------------------------------------------
 
-	if (serverConfig.APIInfo.blockcypher.network == "btc/test3") {
+	if (serverConfig.APIInfo.blockcypher.network == "test3") {
 		var cashRegister = serverConfig.getNextWithdrawalAccount("tbtc");
 	} else {
 		cashRegister = serverConfig.getNextWithdrawalAccount("btc");
@@ -1129,7 +1129,6 @@ function setDefaultHeaders(responseObj) {
 	} catch (error) {
 		trace("error setting headers: " + error);
 	}
-	
 }
 
 /**
