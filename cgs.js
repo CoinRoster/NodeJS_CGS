@@ -522,6 +522,7 @@ function* RPC_pushToColdStorage(postData, requestObj, responseObj, batchResponse
 			trace("creating tx: " + JSON.stringify(newtx));
 
 			bcapi.newTX(newtx, function(err,data) {
+				console.log(data);
 				if (err) {
 					trace("Error creating transaction skeleton: \n"+ JSON.stringify(err));
 					replyError(postData, requestObj, responseObj, batchResponses, serverConfig.JSONRPC_EXTERNAL_API_ERROR, "There was a problem creating the transaction.", err);
