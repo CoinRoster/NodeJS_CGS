@@ -1119,12 +1119,17 @@ function replyResult(postData, requestObj, responseObj, batchResponses, result) 
 * @param The response object to add default headers to.
 */
 function setDefaultHeaders(responseObj) {
-	for (var count=0; count < serverConfig.rpc_options.headers.length; count++) {
-		var headerData = serverConfig.rpc_options.headers[count];
-		for (var headerType in headerData) {
-			responseObj.setHeader(headerType, headerData[headerType]);
+	try {
+		for (var count=0; count < serverConfig.rpc_options.headers.length; count++) {
+			var headerData = serverConfig.rpc_options.headers[count];
+			for (var headerType in headerData) {
+				responseObj.setHeader(headerType, headerData[headerType]);
+			}
 		}
+	} catch (error) {
+		trace("error setting headers: " + error);
 	}
+	
 }
 
 /**
